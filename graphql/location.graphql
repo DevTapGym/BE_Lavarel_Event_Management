@@ -1,0 +1,46 @@
+"Kiểu dữ liệu Location"
+type Location {
+    id: ID!
+    name: String!
+    building: String
+    address: String
+    capacity: Int
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+extend type Query {
+    "Lấy tất cả locations"
+    locations: [Location!]! @all
+
+    "Lấy location theo ID"
+    location(id: ID! @eq): Location @find
+}
+
+extend type Mutation {
+    "Tạo location mới"
+    createLocation(
+        name: String!
+        building: String
+        address: String
+        capacity: Int
+    ): Location!
+        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @field(resolver: "App\\GraphQL\\Mutations\\LocationMutation@create")
+
+    "Cập nhật location"
+    updateLocation(
+        id: ID!
+        name: String
+        building: String
+        address: String
+        capacity: Int
+    ): Location
+        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @field(resolver: "App\\GraphQL\\Mutations\\LocationMutation@update")
+
+    "Xóa location"
+    deleteLocation(id: ID!): Location
+        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @field(resolver: "App\\GraphQL\\Mutations\\LocationMutation@delete")
+}

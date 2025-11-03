@@ -40,4 +40,9 @@ class Event extends Model
         'current_confirmed' => 0,
         'current_waiting' => 0,
     ];
+
+    public function location()
+    {
+        return $this->belongsTo(Location::class, 'location_id');
+    }
 }

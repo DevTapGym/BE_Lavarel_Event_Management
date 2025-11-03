@@ -26,4 +26,14 @@ class Registration extends Model
     protected $attributes = [
         'status' => 'WAITING_CONFIRM', // CONFIRMED', 'CANCELLED', 'WAITING', 'NO_SHOW'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function event()
+    {
+        return $this->belongsTo(Event::class, 'event_id');
+    }
 }

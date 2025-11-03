@@ -1,0 +1,54 @@
+"Kiểu dữ liệu Registration"
+type Registration {
+    id: ID!
+    user_id: String!
+    event_id: String!
+    registration_at: DateTime
+    cancelled_at: DateTime
+    queue_order: Int
+    status: String!
+    cancel_reason: String
+    created_at: DateTime
+    updated_at: DateTime
+    user: User @belongsTo
+    event: Event @belongsTo
+}
+
+extend type Query {
+    "Lấy tất cả registrations"
+    registrations: [Registration!]! @all
+
+    "Lấy registration theo ID"
+    registration(id: ID! @eq): Registration @find
+}
+
+extend type Mutation {
+    "Tạo registration mới"
+    createRegistration(
+        user_id: String!
+        event_id: String!
+        queue_order: Int
+        status: String
+    ): Registration!
+        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @field(resolver: "App\\GraphQL\\Mutations\\RegistrationMutation@create")
+
+    "Cập nhật registration"
+    updateRegistration(
+        id: ID!
+        user_id: String
+        event_id: String
+        registration_at: DateTime
+        cancelled_at: DateTime
+        queue_order: Int
+        status: String
+        cancel_reason: String
+    ): Registration
+        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @field(resolver: "App\\GraphQL\\Mutations\\RegistrationMutation@update")
+
+    "Hủy registration"
+    cancelRegistration(id: ID!, cancel_reason: String): Registration
+        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @field(resolver: "App\\GraphQL\\Mutations\\RegistrationMutation@cancel")
+}

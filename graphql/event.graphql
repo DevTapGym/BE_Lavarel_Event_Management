@@ -4,6 +4,7 @@ type Event {
     title: String!
     description: String
     location_id: String!
+    location: Location @belongsTo
     start_date: String!
     end_date: String!
     organizer: String!
@@ -41,7 +42,9 @@ extend type Mutation {
         image_url: String
         status: String
         approval_status: String
-    ): Event! @field(resolver: "App\\GraphQL\\Mutations\\EventMutation@create")
+    ): Event!
+        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @field(resolver: "App\\GraphQL\\Mutations\\EventMutation@create")
 
     "Cập nhật sự kiện"
     updateEvent(
@@ -58,8 +61,12 @@ extend type Mutation {
         image_url: String
         status: String
         approval_status: String
-    ): Event @update
+    ): Event
+        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @update
 
     "Xóa sự kiện"
-    deleteEvent(id: ID! @eq): Event @delete
+    deleteEvent(id: ID! @eq): Event
+        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @delete
 }
