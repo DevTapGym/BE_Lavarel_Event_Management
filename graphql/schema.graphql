@@ -1,3 +1,5 @@
+#import event.graphql
+
 "A datetime string with format `Y-m-d H:i:s`, e.g. `2018-05-23 13:43:32`."
 scalar DateTime
     @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
@@ -20,9 +22,6 @@ type Query {
         "Filters by name. Accepts SQL LIKE wildcards `%` and `_`."
         name: String @where(operator: "like")
     ): [User!]! @paginate(defaultCount: 10)
-
-    events: [Event!]!
-        @field(resolver: "App\\GraphQL\\Queries\\EventResolver@all")
 }
 
 "Account of a person who uses this application."
@@ -44,49 +43,4 @@ type User {
 
     "When the account was last updated."
     updated_at: DateTime!
-}
-
-type EventResponse {
-    status: Int
-    message: String
-    data: [Event]
-}
-
-"Kiểu dữ liệu Event"
-type Event {
-    id: ID!
-    title: String!
-    description: String
-    location_id: String!
-    start_date: String!
-    end_date: String!
-    organizer: String!
-    topic: String
-    capacity: Int!
-    waiting_capacity: Int
-    image_url: String
-    status: String
-    approval_status: String
-    created_at: String
-    updated_at: String
-}
-
-input CreateEventInput {
-    title: String!
-    description: String
-    location_id: String!
-    start_date: DateTime!
-    end_date: DateTime!
-    organizer: String!
-    topic: String
-    capacity: Int!
-    waiting_capacity: Int
-    image_url: String
-    status: String
-    approval_status: String
-}
-
-type Mutation {
-    createEvent(input: CreateEventInput!): Event
-        @field(resolver: "App\\GraphQL\\Mutations\\EventMutation@create")
 }

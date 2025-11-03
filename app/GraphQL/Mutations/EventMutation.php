@@ -10,11 +10,10 @@ class EventMutation
 {
     public function create($_, array $args)
     {
-        $input = $args['input'];
-
-        $validator = Validator::make($input, (new CreateEventRequest())->rules());
+        $request = new CreateEventRequest();
+        $validator = Validator::make($args, $request->rules(), $request->messages());
         $validator->validate();
-
-        return Event::create($validator->validated());
+        $event = Event::create($args);
+        return $event;
     }
 }
