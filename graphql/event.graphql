@@ -12,10 +12,30 @@ type Event {
     capacity: Int!
     waiting_capacity: Int
     image_url: String
-    status: String
-    approval_status: String
+    current_status: String
+    current_approval_status: String
+
+    # Lịch sử trạng thái (mảng object)
+    status_history: [StatusHistory!]
+    # Lịch sử phê duyệt
+    approval_history: [ApprovalHistory!]
+
     created_at: String
     updated_at: String
+}
+
+"Object kiểu cho trạng thái"
+type StatusHistory {
+    name: String!
+    sequence: Int!
+    changed_at: String!
+}
+
+"Object kiểu cho phê duyệt"
+type ApprovalHistory {
+    name: String!
+    sequence: Int!
+    changed_at: String!
 }
 
 extend type Query {
@@ -40,13 +60,10 @@ extend type Mutation {
         capacity: Int!
         waiting_capacity: Int
         image_url: String
-        status: String
-        approval_status: String
     ): Event!
         @middleware(checks: ["jwt.auth", "check.permission", "active"])
         @field(resolver: "App\\GraphQL\\Mutations\\EventMutation@create")
 
-    "Cập nhật sự kiện"
     updateEvent(
         id: ID! @eq
         title: String
@@ -59,11 +76,29 @@ extend type Mutation {
         capacity: Int
         waiting_capacity: Int
         image_url: String
-        status: String
-        approval_status: String
     ): Event
         @middleware(checks: ["jwt.auth", "check.permission", "active"])
-        @update
+        @field(resolver: "App\\GraphQL\\Mutations\\EventMutation@update")
+
+    "Chuyển sự kiện sang trạng thái tiếp theo"
+    advanceStatus(id: ID!): Event
+        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @field(resolver: "App\\GraphQL\\Mutations\\EventMutation@advanceStatus")
+
+    "Hủy sự kiện (thêm trạng thái CANCELLED)"
+    cancelEvent(id: ID!): Event
+        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @field(resolver: "App\\GraphQL\\Mutations\\EventMutation@cancelEvent")
+
+    "Thêm trạng thái phê duyệt sự kiện"
+    updateApprovalStatus(
+        id: ID!
+        status: String! # Chỉ 'APPROVED' hoặc 'REJECTED'
+    ): Event
+        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @field(
+            resolver: "App\\GraphQL\\Mutations\\EventMutation@updateApprovalStatus"
+        )
 
     "Xóa sự kiện"
     deleteEvent(id: ID! @eq): Event

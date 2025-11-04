@@ -15,4 +15,14 @@ class Feedback extends Model
         'comments',
     ];
     public $timestamps = true;
+
+    public function registration()
+    {
+        return $this->belongsTo(Registration::class, 'registration_id');
+    }
+
+    public function event()
+    {
+        return $this->belongsTo(Event::class, 'event_id');
+    }
 }
