@@ -13,6 +13,17 @@ class Feedback extends Model
         'event_id',
         'rating',
         'comments',
+        'is_hidden'
     ];
     public $timestamps = true;
+
+    public function registration()
+    {
+        return $this->belongsTo(Registration::class, 'registration_id');
+    }
+
+    public function event()
+    {
+        return $this->belongsTo(Event::class, 'event_id');
+    }
 }

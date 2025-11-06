@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ActivationController;
+use Nuwave\Lighthouse\Http\GraphQLController;
 
 // ---------------------
 // Public routes 
@@ -15,14 +16,6 @@ Route::prefix('/v1')->group(function () {
         Route::get('/refresh', [AuthController::class, 'refreshToken']);
         Route::post('/forgot-password', [ActivationController::class, 'forgotPassword']);
         Route::post('/reset-password', [ActivationController::class, 'resetPassword']);
-    });
-
-    Route::prefix('/events')->group(function () {
-        Route::get('/', [EventController::class, 'index']);
-        Route::get('/{id}', [EventController::class, 'show']);
-        Route::post('/', [EventController::class, 'store']);
-        Route::put('/{id}', [EventController::class, 'update']);
-        Route::delete('/{id}', [EventController::class, 'destroy']);
     });
 });
 
@@ -47,7 +40,5 @@ Route::prefix('/v1')->middleware(['jwt.auth', 'check.permission', 'active'])->gr
         Route::put('/change-password', [AuthController::class, 'changePassword'])->name('change.password');
     });
 
-    Route::prefix('/events')->group(function () {
-        // Additional protected event routes can be added here
-    });
+    //Route::post('/graphql', [GraphQLController::class, '__invoke']);
 });

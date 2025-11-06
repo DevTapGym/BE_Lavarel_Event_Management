@@ -8,10 +8,25 @@ use Exception;
 
 class EventResolver
 {
-    use ApiResponse;
-
     public function all($_, array $args)
     {
-        return Event::all();
+        try {
+            return Event::all();
+        } catch (Exception $e) {
+            throw new Exception('Internal server error: ' . $e->getMessage());
+        }
+    }
+
+    public function find($_, array $args)
+    {
+        try {
+            $event = Event::find($args['id']);
+            if (!$event) {
+                throw new Exception('Event not found');
+            }
+            return $event;
+        } catch (Exception $e) {
+            throw new Exception('Internal server error: ' . $e->getMessage());
+        }
     }
 }

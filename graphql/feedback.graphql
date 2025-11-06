@@ -1,0 +1,46 @@
+type Feedback {
+    _id: ID!
+    registration_id: String!
+    event_id: String!
+    rating: Int!
+    comments: String
+    registration: Registration @belongsTo
+    event: Event @belongsTo
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+input CreateFeedbackInput {
+    registration_id: String!
+    event_id: String!
+    rating: Int!
+    comments: String
+}
+
+input UpdateFeedbackInput {
+    registration_id: String
+    event_id: String
+    rating: Int
+    comments: String
+}
+
+type Query {
+    feedbacks: [Feedback!]!
+        @middleware(checks: ["jwt.auth", "active"])
+        @field(resolver: "App\\GraphQL\\Queries\\FeedbackQuery@all")
+    feedback(id: ID! @eq): Feedback
+        @middleware(checks: ["jwt.auth", "active"])
+        @find
+}
+
+extend type Mutation {
+    createFeedback(input: CreateFeedbackInput!): Feedback!
+        @middleware(checks: ["jwt.auth", "active"])
+        @field(resolver: "App\\GraphQL\\Mutations\\FeedbackMutation@create")
+    updateFeedback(id: ID!, input: UpdateFeedbackInput!): Feedback!
+        @middleware(checks: ["jwt.auth", "active"])
+        @field(resolver: "App\\GraphQL\\Mutations\\FeedbackMutation@update")
+    deleteFeedback(id: ID!): Feedback!
+        @middleware(checks: ["jwt.auth", "active"])
+        @field(resolver: "App\\GraphQL\\Mutations\\FeedbackMutation@delete")
+}

@@ -5,7 +5,6 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use App\Traits\ApiResponse;
 use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\EnsureTokenIsValid;
