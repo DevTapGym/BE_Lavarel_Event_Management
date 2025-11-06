@@ -111,11 +111,8 @@ class RegistrationMutation
                 throw new Exception('Đăng ký này đã bị hủy rồi.');
             }
 
-            // Cập nhật event capacity
             $event = Event::findOrFail($registration->event_id);
-
             if ($currentStatus === 'CONFIRMED') {
-                // Tìm người đầu tiên trong waiting list để promote
                 $waitingRegistrations = Registration::where('event_id', $registration->event_id)
                     ->orderBy('queue_order', 'asc')
                     ->get()
@@ -124,26 +121,20 @@ class RegistrationMutation
                     });
 
                 if ($waitingRegistrations->isNotEmpty()) {
-                    // Có người chờ → Promote người đầu tiên
                     $firstWaiting = $waitingRegistrations->first();
                     $firstWaiting->addStatus('CONFIRMED');
                     $firstWaiting->queue_order = null;
                     $firstWaiting->save();
-
-                    // Giảm current_waiting, giữ nguyên current_confirmed
                     $event->decrement('current_waiting');
                 } else {
-                    // Không có người chờ → Giảm current_confirmed
                     $event->decrement('current_confirmed');
                 }
             } elseif ($currentStatus === 'WAITING') {
-                // Nếu là WAITING thì chỉ giảm current_waiting
                 $event->decrement('current_waiting');
             }
-
-            // Hủy registration
-            $registration->cancel($args['cancel_reason'] ?? null);
-
+            $registration->addStatus('CANCELLED');
+            $registration->cancel_reason = $args['cancel_reason'] ?? null;
+            $registration->save();
             return $registration->fresh();
         } catch (Exception $e) {
             throw new Exception('Failed to cancel registration: ' . $e->getMessage());

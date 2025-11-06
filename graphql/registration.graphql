@@ -28,8 +28,10 @@ extend type Query {
     "Lấy tất cả registrations"
     registrations: [Registration!]! @all
 
-    "Lấy registration theo ID"
-    registration(id: ID! @eq): Registration @find
+    "Lấy registrations theo user_id"
+    registrationsByUser(user_id: String!): [Registration!]!
+        @middleware(checks: ["jwt.auth", "active"])
+        @field(resolver: "App\\GraphQL\\Queries\\RegistrationResolver@byUser")
 }
 
 extend type Mutation {

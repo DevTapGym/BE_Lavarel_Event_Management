@@ -1,5 +1,5 @@
 type Feedback {
-    _id: ID!
+    id: ID!
     registration_id: String!
     event_id: String!
     rating: Int!
@@ -24,13 +24,13 @@ input UpdateFeedbackInput {
     comments: String
 }
 
-type Query {
-    feedbacks: [Feedback!]!
+extend type Query {
+    feedbacks: [Feedback!]! @middleware(checks: ["jwt.auth", "active"]) @all
+
+    "Lấy tất cả feedbacks của một user dựa trên registration"
+    feedbacksByUser(user_id: String!): [Feedback!]!
         @middleware(checks: ["jwt.auth", "active"])
-        @field(resolver: "App\\GraphQL\\Queries\\FeedbackQuery@all")
-    feedback(id: ID! @eq): Feedback
-        @middleware(checks: ["jwt.auth", "active"])
-        @find
+        @field(resolver: "App\\GraphQL\\Queries\\FeedbackResolver@byUser")
 }
 
 extend type Mutation {
