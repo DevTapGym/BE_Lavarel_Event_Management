@@ -6,12 +6,22 @@ type Registration {
     registration_at: DateTime
     cancelled_at: DateTime
     queue_order: Int
-    status: String!
+    current_status: String
     cancel_reason: String
     created_at: DateTime
     updated_at: DateTime
     user: User @belongsTo
     event: Event @belongsTo
+
+    # Lịch sử trạng thái
+    status_history: [RegistrationStatusHistory!]
+}
+
+"Object kiểu cho trạng thái registration"
+type RegistrationStatusHistory {
+    name: String!
+    sequence: Int!
+    changed_at: DateTime!
 }
 
 extend type Query {
@@ -24,31 +34,12 @@ extend type Query {
 
 extend type Mutation {
     "Tạo registration mới"
-    createRegistration(
-        user_id: String!
-        event_id: String!
-        queue_order: Int
-        status: String
-    ): Registration!
-        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+    createRegistration(user_id: String!, event_id: String!): Registration!
+        @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Mutations\\RegistrationMutation@create")
-
-    "Cập nhật registration"
-    updateRegistration(
-        id: ID!
-        user_id: String
-        event_id: String
-        registration_at: DateTime
-        cancelled_at: DateTime
-        queue_order: Int
-        status: String
-        cancel_reason: String
-    ): Registration
-        @middleware(checks: ["jwt.auth", "check.permission", "active"])
-        @field(resolver: "App\\GraphQL\\Mutations\\RegistrationMutation@update")
 
     "Hủy registration"
     cancelRegistration(id: ID!, cancel_reason: String): Registration
-        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Mutations\\RegistrationMutation@cancel")
 }

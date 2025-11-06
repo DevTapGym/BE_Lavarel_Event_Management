@@ -15,9 +15,5 @@ class Role extends Model
         'permissions'
     ];
 
-    protected $casts = [
-        'permissions' => 'array',
-    ];
-
     public $timestamps = true;
 }

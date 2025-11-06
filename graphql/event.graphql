@@ -61,7 +61,8 @@ extend type Mutation {
         waiting_capacity: Int
         image_url: String
     ): Event!
-        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @middleware(checks: ["jwt.auth", "active"])
+        @checkPermission(permission: "create-event")
         @field(resolver: "App\\GraphQL\\Mutations\\EventMutation@create")
 
     updateEvent(
@@ -77,17 +78,20 @@ extend type Mutation {
         waiting_capacity: Int
         image_url: String
     ): Event
-        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @middleware(checks: ["jwt.auth", "active"])
+        @checkPermission(permission: "update-event")
         @field(resolver: "App\\GraphQL\\Mutations\\EventMutation@update")
 
     "Chuyển sự kiện sang trạng thái tiếp theo"
     advanceStatus(id: ID!): Event
         @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @checkPermission(permission: "add-event-status")
         @field(resolver: "App\\GraphQL\\Mutations\\EventMutation@advanceStatus")
 
     "Hủy sự kiện (thêm trạng thái CANCELLED)"
     cancelEvent(id: ID!): Event
-        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @middleware(checks: ["jwt.auth", "active"])
+        @checkPermission(permission: "cancel-event")
         @field(resolver: "App\\GraphQL\\Mutations\\EventMutation@cancelEvent")
 
     "Thêm trạng thái phê duyệt sự kiện"
@@ -95,13 +99,14 @@ extend type Mutation {
         id: ID!
         status: String! # Chỉ 'APPROVED' hoặc 'REJECTED'
     ): Event
-        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @middleware(checks: ["jwt.auth", "active"])
+        @checkPermission(permission: "approve-event")
         @field(
             resolver: "App\\GraphQL\\Mutations\\EventMutation@updateApprovalStatus"
         )
 
     "Xóa sự kiện"
     deleteEvent(id: ID! @eq): Event
-        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @middleware(checks: ["jwt.auth", "active"])
         @delete
 }

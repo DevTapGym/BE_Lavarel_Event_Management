@@ -13,6 +13,7 @@ class Feedback extends Model
         'event_id',
         'rating',
         'comments',
+        'is_hidden'
     ];
     public $timestamps = true;
 

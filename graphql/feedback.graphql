@@ -26,21 +26,21 @@ input UpdateFeedbackInput {
 
 type Query {
     feedbacks: [Feedback!]!
-        @middleware(checks: ["jwt.auth", "check.permission:view-feedback"])
+        @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Queries\\FeedbackQuery@all")
     feedback(id: ID! @eq): Feedback
-        @middleware(checks: ["jwt.auth", "check.permission:view-feedback"])
+        @middleware(checks: ["jwt.auth", "active"])
         @find
 }
 
 extend type Mutation {
     createFeedback(input: CreateFeedbackInput!): Feedback!
-        @middleware(checks: ["jwt.auth", "check.permission:create-feedback"])
+        @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Mutations\\FeedbackMutation@create")
     updateFeedback(id: ID!, input: UpdateFeedbackInput!): Feedback!
-        @middleware(checks: ["jwt.auth", "check.permission:update-feedback"])
+        @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Mutations\\FeedbackMutation@update")
     deleteFeedback(id: ID!): Feedback!
-        @middleware(checks: ["jwt.auth", "check.permission:delete-feedback"])
+        @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Mutations\\FeedbackMutation@delete")
 }
