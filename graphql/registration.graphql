@@ -44,4 +44,10 @@ extend type Mutation {
     cancelRegistration(id: ID!, cancel_reason: String): Registration
         @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Mutations\\RegistrationMutation@cancel")
+
+    "Điểm danh bằng email và mã code"
+    checkInRegistration(email: String!, code: String!): Registration!
+        @field(
+            resolver: "App\\GraphQL\\Mutations\\RegistrationMutation@checkIn"
+        )
 }

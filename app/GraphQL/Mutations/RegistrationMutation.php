@@ -82,6 +82,8 @@ class RegistrationMutation
                 'event_id' => $args['event_id'],
                 'queue_order' => $queueOrder,
                 'registration_at' => now(),
+                'code_roll_call' => $this->generateRollCallCode($args['user_id']),
+                'is_attended' => false,
             ]);
 
             // Override status_history với status phù hợp
@@ -138,6 +140,70 @@ class RegistrationMutation
             return $registration->fresh();
         } catch (Exception $e) {
             throw new Exception('Failed to cancel registration: ' . $e->getMessage());
+        }
+    }
+
+    private function generateRollCallCode(string $userId): string
+    {
+        do {
+            $code = (string) random_int(100000, 999999);
+
+            $exists = Registration::where('user_id', $userId)
+                ->where('code_roll_call', $code)
+                ->exists();
+        } while ($exists);
+
+        return $code;
+    }
+
+    public function checkIn($_, array $args)
+    {
+        try {
+            $email = $args['email'];
+            $code = $args['code'];
+
+            // Tìm user theo email
+            $user = User::where('email', $email)->first();
+            if (!$user) {
+                throw ValidationException::withMessages([
+                    'email' => ['Email không tồn tại trong hệ thống.'],
+                ]);
+            }
+
+            // Tìm registration theo user_id và code_roll_call
+            $registration = Registration::where('user_id', (string) $user->_id)
+                ->where('code_roll_call', $code)
+                ->first();
+
+            if (!$registration) {
+                throw ValidationException::withMessages([
+                    'code' => ['Mã điểm danh không đúng hoặc bạn chưa đăng ký sự kiện này.'],
+                ]);
+            }
+
+            // Kiểm tra registration đã bị hủy chưa
+            if ($registration->getCurrentStatusAttribute() === 'CANCELLED') {
+                throw ValidationException::withMessages([
+                    'code' => ['Đăng ký này đã bị hủy. Không thể điểm danh.'],
+                ]);
+            }
+
+            // Kiểm tra đã điểm danh chưa
+            if ($registration->is_attended) {
+                throw ValidationException::withMessages([
+                    'code' => ['Bạn đã điểm danh rồi.'],
+                ]);
+            }
+
+            // Cập nhật is_attended = true
+            $registration->is_attended = true;
+            $registration->save();
+
+            return $registration->fresh();
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (Exception $e) {
+            throw new Exception('Failed to check in: ' . $e->getMessage());
         }
     }
 }

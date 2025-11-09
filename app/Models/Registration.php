@@ -16,13 +16,16 @@ class Registration extends Model
         'registration_at',
         'cancelled_at',
         'queue_order',
-        'status_history',
+        'status_history', // CANCELLED, CONFIRMED, WAITING
         'cancel_reason',
+        'code_roll_call',
+        'is_attended'
     ];
 
     protected $casts = [
         'registration_at' => 'datetime',
         'cancelled_at' => 'datetime',
+        'is_attended' => 'boolean',
     ];
 
     protected $appends = [
