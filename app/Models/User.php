@@ -54,6 +54,7 @@ class User extends Authenticatable implements JWTSubject
         'activation_expires_at' => null,
         'last_activation_sent_at' => null,
         'reputation_score' => 70,
+        'avatar' => null,
     ];
 
     protected $casts = [

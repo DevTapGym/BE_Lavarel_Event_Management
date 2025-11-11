@@ -52,7 +52,7 @@ class CalculateEventPointsJob implements ShouldQueue
             }
 
             Log::info('CalculateEventPointsJob hoàn thành thành công');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('CalculateEventPointsJob thất bại: ' . $e->getMessage());
             throw $e;
         }
