@@ -1,10 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\EventController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ActivationController;
-use Nuwave\Lighthouse\Http\GraphQLController;
+use App\Http\Controllers\NotificationController;
 
 // ---------------------
 // Public routes 
@@ -38,6 +37,14 @@ Route::prefix('/v1')->middleware(['jwt.auth', 'check.permission', 'active'])->gr
         Route::get('/me', [AuthController::class, 'me'])->name('get.info');
         Route::put('/edit-profile', [AuthController::class, 'updateProfile'])->name('edit.profile');
         Route::put('/change-password', [AuthController::class, 'changePassword'])->name('change.password');
+    });
+
+    Route::prefix('/notification')->group(function () {
+        Route::get('/{eventId}', [NotificationController::class, 'notificationsByEvent'])->name('get.notifications.by.event');
+        Route::get('/', [NotificationController::class, 'getAllNotification'])->name('get.all.notifications');
+        Route::post('/', [NotificationController::class, 'store'])->name('create.notification');
+        Route::put('/{id}', [NotificationController::class, 'update'])->name('update.notification');
+        Route::delete('/{id}', [NotificationController::class, 'delete'])->name('delete.notification');
     });
 
     //Route::post('/graphql', [GraphQLController::class, '__invoke']);

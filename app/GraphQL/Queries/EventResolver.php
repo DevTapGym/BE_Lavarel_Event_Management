@@ -3,7 +3,6 @@
 namespace App\GraphQL\Queries;
 
 use App\Models\Event;
-use App\Traits\ApiResponse;
 use Exception;
 
 class EventResolver

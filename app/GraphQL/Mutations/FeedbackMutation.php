@@ -38,6 +38,13 @@ class FeedbackMutation
                 ]);
             }
 
+            // Kiểm tra user đã tham dự sự kiện chưa (is_attended)
+            if (!$registration->is_attended) {
+                throw ValidationException::withMessages([
+                    'registration_id' => ['Bạn chưa tham dự sự kiện này. Chỉ có thể feedback sau khi đã tham dự.'],
+                ]);
+            }
+
             // Kiểm tra xem registration này đã feedback chưa
             $existingFeedback = Feedback::where('registration_id', $input['registration_id'])
                 ->where('event_id', $input['event_id'])
