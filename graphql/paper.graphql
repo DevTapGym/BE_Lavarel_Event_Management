@@ -1,0 +1,82 @@
+# Paper Type
+type Paper {
+    _id: ID!
+    title: String!
+    abstract: String
+    author: [String!]!
+    event_id: ID!
+    file_url: String
+    view: Int!
+    download: Int!
+    category: String
+    language: String
+    keywords: [String!]
+    created_at: DateTime
+    updated_at: DateTime
+
+    # Relations
+    event: Event @belongsTo(relation: "event")
+}
+
+# Input Types
+input CreatePaperInput {
+    title: String! @rules(apply: ["required", "string", "max:255"])
+    abstract: String @rules(apply: ["string"])
+    author: [String!]! @rules(apply: ["required", "array"])
+    event_id: ID! @rules(apply: ["required"])
+    file_url: String @rules(apply: ["url"])
+    category: String @rules(apply: ["string"])
+    language: String @rules(apply: ["string"])
+    keywords: [String!] @rules(apply: ["array"])
+}
+
+input UpdatePaperInput {
+    _id: ID! @rules(apply: ["required"])
+    title: String @rules(apply: ["string", "max:255"])
+    abstract: String @rules(apply: ["string"])
+    author: [String!] @rules(apply: ["array"])
+    event_id: ID
+    file_url: String @rules(apply: ["url"])
+    category: String @rules(apply: ["string"])
+    language: String @rules(apply: ["string"])
+    keywords: [String!] @rules(apply: ["array"])
+}
+
+input SearchPaperInput {
+    title: String
+    category: String
+    keywords: [String!]
+    event_id: ID
+    language: String
+}
+
+# Queries
+extend type Query {
+    # Lấy tất cả papers
+    papers: [Paper!]! @all
+
+    # Lấy paper theo ID
+    paper(_id: ID! @eq): Paper @find
+
+    # Search papers theo nhiều tiêu chí
+    searchPapers(
+        input: SearchPaperInput
+        first: Int = 15
+        page: Int = 1
+    ): PaperPaginator @field(resolver: "App\\GraphQL\\Queries\\SearchPapers")
+}
+
+# Mutations
+extend type Mutation {
+    # Tạo paper mới
+    createPaper(input: CreatePaperInput! @spread): Paper
+        @field(resolver: "App\\GraphQL\\Mutations\\PaperMutation@create")
+
+    # Cập nhật paper
+    updatePaper(input: UpdatePaperInput! @spread): Paper
+        @field(resolver: "App\\GraphQL\\Mutations\\PaperMutation@update")
+
+    # Xóa paper
+    deletePaper(_id: ID!): Paper
+        @field(resolver: "App\\GraphQL\\Mutations\\PaperMutation@delete")
+}

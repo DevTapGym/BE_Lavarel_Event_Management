@@ -10,6 +10,8 @@ use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\EnsureTokenIsValid;
 use App\Http\Middleware\CheckPermissionByRoute;
 use App\Http\Middleware\EnsureUserIsActive;
+use App\Http\Middleware\CorsMiddleware;
+
 
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -21,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(ForceJsonResponse::class);
+        $middleware->use([CorsMiddleware::class]);
         $middleware->alias([
             'jwt.auth' => EnsureTokenIsValid::class,
             'check.permission' => CheckPermissionByRoute::class,
