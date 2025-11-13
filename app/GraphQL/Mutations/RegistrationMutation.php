@@ -11,6 +11,15 @@ use Exception;
 
 class RegistrationMutation
 {
+    /**
+     * Tạo đăng ký mới cho user
+     * 
+     * @param mixed $_
+     * @param array<string, mixed> $args
+     * @return Registration
+     * @throws ValidationException
+     * @throws Exception
+     */
     public function create($_, array $args)
     {
         try {
@@ -19,6 +28,14 @@ class RegistrationMutation
             if (!$user) {
                 throw ValidationException::withMessages([
                     'user_id' => ['User không tồn tại.'],
+                ]);
+            }
+
+            // Kiểm tra điểm uy tín của user
+            $reputationScore = $user->reputation_score ?? 70;
+            if ($reputationScore < 50) {
+                throw ValidationException::withMessages([
+                    'user_id' => ["Bạn không thể đăng ký sự kiện vì điểm uy tín của bạn quá thấp ({$reputationScore}/100). Điểm tối thiểu để đăng ký là 50. Vui lòng chờ đến kỳ sau hoặc liên hệ quản trị viên."],
                 ]);
             }
 
@@ -104,9 +121,18 @@ class RegistrationMutation
         }
     }
 
+    /**
+     * Hủy đăng ký
+     * 
+     * @param mixed $_
+     * @param array<string, mixed> $args
+     * @return Registration
+     * @throws Exception
+     */
     public function cancel($_, array $args)
     {
         try {
+            /** @var array<string, mixed> $args */
             $registration = Registration::findOrFail($args['id']);
             $currentStatus = $registration->getCurrentStatusAttribute();
 
@@ -175,8 +201,15 @@ class RegistrationMutation
         }
     }
 
+    /**
+     * Tạo mã roll call 6 số unique cho user
+     * 
+     * @param string $userId
+     * @return string
+     */
     private function generateRollCallCode(string $userId): string
     {
+        /** @var string $userId */
         do {
             $code = (string) random_int(100000, 999999);
 
@@ -188,9 +221,19 @@ class RegistrationMutation
         return $code;
     }
 
+    /**
+     * Điểm danh user bằng email và mã roll call
+     * 
+     * @param mixed $_
+     * @param array<string, mixed> $args
+     * @return Registration
+     * @throws ValidationException
+     * @throws Exception
+     */
     public function checkIn($_, array $args)
     {
         try {
+            /** @var array<string, mixed> $args */
             $email = $args['email'];
             $code = $args['code'];
 

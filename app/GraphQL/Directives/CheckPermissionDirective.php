@@ -30,53 +30,49 @@ GRAPHQL;
     {
         $requiredPermission = $this->directiveArgValue('permission');
 
-        $fieldValue->wrapResolver(
-            fn(Closure $resolver): Closure =>
-            fn($root, array $args, GraphQLContext $context, ResolveInfo $resolveInfo) =>
-            $this->authorize($resolver, $root, $args, $context, $resolveInfo, $requiredPermission)
-        );
-    }
+        $fieldValue->wrapResolver(function (Closure $resolver) use ($requiredPermission): Closure {
+            return function ($root, array $args, GraphQLContext $context, ResolveInfo $resolveInfo) use ($resolver, $requiredPermission) {
+                $user = $context->user();
 
-    protected function authorize(
-        Closure $resolver,
-        $root,
-        array $args,
-        GraphQLContext $context,
-        ResolveInfo $resolveInfo,
-        string $requiredPermission
-    ) {
-        $user = $context->user();
+                if (!$user) {
+                    throw new Error('Unauthorized: User not authenticated');
+                }
 
-        if (!$user) {
-            throw new Error('Unauthorized: User not authenticated');
-        }
+                // Nếu là ADMIN thì bỏ qua kiểm tra permission
+                if (is_array($user->roles) && in_array('ADMIN', $user->roles)) {
+                    return $resolver($root, $args, $context, $resolveInfo);
+                }
 
-        // Nếu là ADMIN thì bỏ qua kiểm tra permission
-        if (is_array($user->roles) && in_array('ADMIN', $user->roles)) {
-            return $resolver($root, $args, $context, $resolveInfo);
-        }
+                // Kiểm tra permission
+                if (!$this->checkUserPermission($user, $requiredPermission)) {
+                    throw new Error("Forbidden: You don't have permission to perform this action ($requiredPermission)");
+                }
 
-        // Kiểm tra permission
-        if (!$this->checkUserPermission($user, $requiredPermission)) {
-            throw new Error("Forbidden: You don't have permission to perform this action ($requiredPermission)");
-        }
-
-        return $resolver($root, $args, $context, $resolveInfo);
+                return $resolver($root, $args, $context, $resolveInfo);
+            };
+        });
     }
 
     /**
      * Kiểm tra user có permission không
+     * 
+     * @param mixed $user
+     * @param string $permission
+     * @return bool
+     * 
+     * @phpstan-ignore-next-line
      */
-    protected function checkUserPermission($user, string $permission): bool
+    protected function checkUserPermission(mixed $user, string $permission): bool
     {
         if (empty($user->roles) || !is_array($user->roles)) {
             return false;
         }
 
+        /** @var string $permission - Workaround cho Intelephense P1008 bug */
         foreach ($user->roles as $roleName) {
             $role = Role::where('name', $roleName)->first();
 
-            if ($role && is_array($role->permissions) && in_array($permission, $role->permissions)) {
+            if ($role && is_array($role->permissions) && in_array($permission, $role->permissions, true)) {
                 return true;
             }
         }
