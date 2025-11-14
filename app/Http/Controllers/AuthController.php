@@ -322,6 +322,8 @@ class AuthController extends Controller
                 'phone'     => $user->customer->phone ?? null,
                 'roles'     => $user->roles ?? 'USER',
                 'is_active' => $user->is_active,
+                'reputation_score' => $user->reputation_score ?? 0,
+                'alerts' => $user->alerts ?? [],
             ],
             'access_token' => $token,
         ];

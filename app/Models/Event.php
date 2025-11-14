@@ -52,6 +52,7 @@ class Event extends Model
         'approval_history', //WAITING', 'APPROVED', 'REJECTED'
         'current_confirmed',
         'current_waiting',
+        'speakers', // Mảng các đối tượng diễn giả
     ];
     public $timestamps = true;
 
@@ -64,6 +65,7 @@ class Event extends Model
     protected $attributes = [
         'current_confirmed' => 0,
         'current_waiting' => 0,
+        'speakers' => [],
     ];
 
     public function location()

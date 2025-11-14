@@ -19,9 +19,6 @@ class CalculateEventPointsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    /**
-     * Create a new job instance.
-     */
     public function __construct()
     {
         //
@@ -34,7 +31,7 @@ class CalculateEventPointsJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            Log::info('Bắt đầu thực thi CalculateEventPointsJob');
+            echo "Bắt đầu thực thi CalculateEventPointsJob tại " . Carbon::now()->toDateTimeString() . "\n";
 
             // Lấy tất cả các sự kiện đã kết thúc (end_date < now)
             $now = Carbon::now();
@@ -45,15 +42,12 @@ class CalculateEventPointsJob implements ShouldQueue
                     return $event->getCurrentStatusAttribute() === 'ENDED';
                 });
 
-            Log::info('Tìm thấy ' . $endedEvents->count() . ' sự kiện đã kết thúc cần xử lý');
-
             foreach ($endedEvents as $event) {
                 $this->processEvent($event);
             }
-
-            Log::info('CalculateEventPointsJob hoàn thành thành công');
+            echo "CalculateEventPointsJob hoàn thành tại " . Carbon::now()->toDateTimeString() . "\n";
         } catch (Exception $e) {
-            Log::error('CalculateEventPointsJob thất bại: ' . $e->getMessage());
+            echo "CalculateEventPointsJob thất bại: " . $e->getMessage() . "\n";
             throw $e;
         }
     }
@@ -63,11 +57,7 @@ class CalculateEventPointsJob implements ShouldQueue
      */
     private function processEvent(Event $event): void
     {
-        try {
-            Log::info("Đang xử lý sự kiện: {$event->_id} - {$event->title}");
-
-            // Lấy tất cả registrations của sự kiện này
-            // Chỉ xử lý những registration có status CONFIRMED và chưa điểm danh
+        try {           
             $absentRegistrations = Registration::where('event_id', (string) $event->_id)
                 ->where('is_attended', false) // Chưa điểm danh
                 ->get()
@@ -77,11 +67,9 @@ class CalculateEventPointsJob implements ShouldQueue
                 });
 
             if ($absentRegistrations->isEmpty()) {
-                Log::info("Không có người dùng vắng mặt cho sự kiện {$event->_id}");
+                echo "Không có người dùng vắng mặt cho sự kiện {$event->_id}\n";
                 return;
             }
-
-            Log::info("Tìm thấy {$absentRegistrations->count()} người dùng vắng mặt cho sự kiện {$event->_id}");
 
             $pointsToDeduct = 7; // Trừ 7 điểm
             $processedCount = 0;
@@ -91,18 +79,16 @@ class CalculateEventPointsJob implements ShouldQueue
                     $user = User::find($registration->user_id);
 
                     if (!$user) {
-                        Log::warning("Không tìm thấy người dùng: {$registration->user_id}");
+                        echo "Không tìm thấy người dùng {$registration->user_id} cho đăng ký {$registration->_id}\n";
                         continue;
                     }
 
                     // Kiểm tra xem đã trừ điểm cho registration này chưa
                     $existingHistory = HistoryPoints::where('user_id', (string) $user->_id)
                         ->where('event_id', (string) $event->_id)
-                        ->where('action_type', 'NO_SHOW')
                         ->first();
 
                     if ($existingHistory) {
-                        Log::info("Đã trừ điểm cho người dùng {$user->_id} tại sự kiện {$event->_id}");
                         continue;
                     }
 

@@ -1,0 +1,26 @@
+type HistoryPoints {
+    _id: ID!
+    user_id: String!
+    event_id: String!
+    old_point: Int!
+    new_point: Int!
+    change_amount: Int!
+    action_type: String!
+    reason: String
+    created_at: DateTime
+
+    # Quan hệ
+    user: User @belongsTo(relation: "user")
+    event: Event @belongsTo(relation: "event")
+}
+
+# QUERY
+extend type Query {
+    # Lấy lịch sử theo user
+    historyPointsByUser(user_id: String!): [HistoryPoints!]!
+        @field(resolver: "App\\GraphQL\\Queries\\HistoryPointsQuery@byUser")
+
+    # Lấy lịch sử theo event
+    historyPointsByEvent(event_id: String!): [HistoryPoints!]!
+        @field(resolver: "App\\GraphQL\\Queries\\HistoryPointsQuery@byEvent")
+}
