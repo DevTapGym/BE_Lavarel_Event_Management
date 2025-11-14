@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ActivationController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\UploadController;
 
 // ---------------------
 // Public routes 
@@ -45,6 +46,12 @@ Route::prefix('/v1')->middleware(['jwt.auth', 'check.permission', 'active'])->gr
         Route::post('/', [NotificationController::class, 'store'])->name('create.notification');
         Route::put('/{id}', [NotificationController::class, 'update'])->name('update.notification');
         Route::delete('/{id}', [NotificationController::class, 'delete'])->name('delete.notification');
+    });
+
+    Route::prefix('/upload')->group(function () {
+        Route::post('/avatar', [UploadController::class, 'uploadAvatar'])->name('upload.avatar');
+        Route::post('/speaker-avatar', [UploadController::class, 'uploadSpeakerAvatar'])->name('upload.speaker.avatar');
+        Route::post('/event-image', [UploadController::class, 'uploadEventImage'])->name('upload.event.image');
     });
 
     //Route::post('/graphql', [GraphQLController::class, '__invoke']);

@@ -1,0 +1,36 @@
+type User {
+    _id: ID!
+    name: String!
+    email: String!
+    avatar: String
+    phone: String
+    is_active: Boolean!
+    reputation_score: Int!
+    roles: [String!]
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+input ResetAllUserPointsInput {
+    points: Int
+    reason: String
+}
+
+type ResetPointsResponse {
+    success: Boolean!
+    message: String!
+    updated_count: Int!
+    total_users: Int!
+    new_points: Int!
+}
+
+# Mutations
+extend type Mutation {
+    # Reset điểm cho toàn bộ người dùng
+    resetAllUserPoints(
+        input: ResetAllUserPointsInput @spread
+    ): ResetPointsResponse!
+        @field(
+            resolver: "App\\GraphQL\\Mutations\\UserMutation@resetAllUserPoints"
+        )
+}

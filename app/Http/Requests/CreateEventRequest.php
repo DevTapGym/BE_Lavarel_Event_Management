@@ -25,6 +25,14 @@ class CreateEventRequest extends FormRequest
             'capacity' => 'required|integer|min:1',
             'waiting_capacity' => 'nullable|integer|min:0',
             'image_url' => 'nullable|url',
+            'speakers' => 'nullable|array',
+            'speakers.*.name' => 'required|string|max:255',
+            'speakers.*.title' => 'nullable|string|max:255',
+            'speakers.*.bio' => 'nullable|string|max:1000',
+            'speakers.*.email' => 'nullable|email|max:255',
+            'speakers.*.phone' => 'nullable|string|max:20',
+            'speakers.*.avatar_url' => 'nullable|url|max:500',
+            'speakers.*.organization' => 'nullable|string|max:255',
         ];
     }
 
@@ -44,6 +52,19 @@ class CreateEventRequest extends FormRequest
             'capacity.min' => 'Số lượng chỗ phải lớn hơn 0',
             'waiting_capacity.min' => 'Số lượng chỗ chờ không được âm',
             'image_url.url' => 'URL hình ảnh không hợp lệ',
+            
+            // Speakers validation messages
+            'speakers.array' => 'Danh sách diễn giả phải là mảng',
+            'speakers.*.name.required' => 'Tên diễn giả là bắt buộc',
+            'speakers.*.name.max' => 'Tên diễn giả không được vượt quá 255 ký tự',
+            'speakers.*.title.max' => 'Chức danh không được vượt quá 255 ký tự',
+            'speakers.*.bio.max' => 'Tiểu sử không được vượt quá 1000 ký tự',
+            'speakers.*.email.email' => 'Email không hợp lệ',
+            'speakers.*.email.max' => 'Email không được vượt quá 255 ký tự',
+            'speakers.*.phone.max' => 'Số điện thoại không được vượt quá 20 ký tự',
+            'speakers.*.avatar_url.url' => 'URL avatar không hợp lệ',
+            'speakers.*.avatar_url.max' => 'URL avatar không được vượt quá 500 ký tự',
+            'speakers.*.organization.max' => 'Tổ chức không được vượt quá 255 ký tự',
         ];
     }
 }

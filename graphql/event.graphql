@@ -19,6 +19,8 @@ type Event {
     status_history: [StatusHistory!]
     # Lịch sử phê duyệt
     approval_history: [ApprovalHistory!]
+    # Danh sách diễn giả
+    speakers: [Speaker!]
 
     created_at: String
     updated_at: String
@@ -38,13 +40,29 @@ type ApprovalHistory {
     changed_at: String!
 }
 
-extend type Query {
-    events: [Event!]! @all
-    event(id: ID!): Event @find
+"Object kiểu cho diễn giả"
+type Speaker {
+    name: String!
+    email: String
+    phone: String
+    avatar_url: String
+    organization: String
+}
 
-    myEvents: [Event!]!
-        @middleware(checks: ["jwt.auth", "check.permission", "active"])
-        @all
+"Input type cho diễn giả"
+input SpeakerInput {
+    name: String!
+    email: String
+    phone: String
+    avatar_url: String
+    organization: String
+}
+
+extend type Query {
+    events: [Event!]!
+        @field(resolver: "App\\GraphQL\\Queries\\EventResolver@all")
+    event(id: ID!): Event
+        @field(resolver: "App\\GraphQL\\Queries\\EventResolver@find")
 }
 
 extend type Mutation {
@@ -60,6 +78,7 @@ extend type Mutation {
         capacity: Int!
         waiting_capacity: Int
         image_url: String
+        speakers: [SpeakerInput!]
     ): Event!
         @middleware(checks: ["jwt.auth", "active"])
         @checkPermission(permission: "create-event")
@@ -77,6 +96,7 @@ extend type Mutation {
         capacity: Int
         waiting_capacity: Int
         image_url: String
+        speakers: [SpeakerInput!]
     ): Event
         @middleware(checks: ["jwt.auth", "active"])
         @checkPermission(permission: "update-event")

@@ -50,13 +50,6 @@ class EventMutation
 
         $event = Event::findOrFail($args['id']);
 
-        // Kiểm tra approval status phải là APPROVED
-        if ($event->getCurrentApprovalStatusAttribute() !== 'APPROVED') {
-            throw ValidationException::withMessages([
-                'approval_status' => ['Chỉ có thể cập nhật sự kiện đã được phê duyệt (APPROVED).'],
-            ]);
-        }
-
         // Nếu có thay đổi thời gian hoặc địa điểm thì mới cần kiểm tra trùng
         $locationId = $args['location_id'] ?? $event->location_id;
         $start = isset($args['start_date']) ? Carbon::parse($args['start_date']) : $event->start_date;
