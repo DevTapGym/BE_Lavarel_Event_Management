@@ -8,6 +8,8 @@ type Registration {
     queue_order: Int
     current_status: String
     cancel_reason: String
+    code_roll_call: String
+    is_attended: Boolean
     created_at: DateTime
     updated_at: DateTime
     user: User @belongsTo
