@@ -114,6 +114,8 @@ class AuthController extends Controller
                 'avatar'    => $user->avatar,
                 'is_active' => $user->is_active,
                 'roles'      => $user->roles,
+                'reputation_score' => $user->reputation_score ?? 0,
+                'alerts' => $user->alerts ?? [],
             ]
         );
     }
