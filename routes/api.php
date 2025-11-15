@@ -52,6 +52,11 @@ Route::prefix('/v1')->middleware(['jwt.auth', 'check.permission', 'active'])->gr
         Route::post('/avatar', [UploadController::class, 'uploadAvatar'])->name('upload.avatar');
         Route::post('/speaker-avatar', [UploadController::class, 'uploadSpeakerAvatar'])->name('upload.speaker.avatar');
         Route::post('/event-image', [UploadController::class, 'uploadEventImage'])->name('upload.event.image');
+        Route::post('/pages', [UploadController::class, 'uploadPages'])->name('upload.paper.file');
+    });
+
+    Route::prefix('/download')->group(function () {
+        Route::get('/paper/{paperId}', [UploadController::class, 'downloadPaper'])->name('download.paper');
     });
 
     //Route::post('/graphql', [GraphQLController::class, '__invoke']);
