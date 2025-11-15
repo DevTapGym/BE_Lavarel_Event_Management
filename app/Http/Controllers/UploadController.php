@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Event;
+use App\Models\Paper;
 use App\Traits\ApiResponse;
 use Exception;
 use Illuminate\Validation\ValidationException;
@@ -71,14 +72,6 @@ class UploadController extends Controller
         }
     }
 
-
-
-        /**
-     * Upload hình ảnh cho sự kiện
-     * 
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function uploadEventImage(Request $request)
     {
         try {
@@ -154,66 +147,7 @@ class UploadController extends Controller
         }
     }
 
-    
-
-    public function uploadPages(Request $request)
-    {
-        try {
-            $request->validate([
-                'pdf' => 'required|file|mimes:pdf|max:10240',
-            ]);
-
-            $file = $request->file('pdf');
-
-            $extension = $file->getClientOriginalExtension();
-            $fileName = 'Document_' . now()->format('Ymd_His') . '.' . $extension;
-            $path = $file->storeAs('pdfs', $fileName, 'local');
-
-            return $this->successResponse(
-                200,
-                'Upload PDF successful',
-                ['path' => $path]
-            );
-        } catch (Exception $e) {
-            return $this->errorResponse(
-                500,
-                'Internal Server Error',
-                $e->getMessage(),
-            );
-        }
-    }
-
-    public function downloadPdf($fileName)
-    {
-        try {
-            $path = 'pdfs/' . $fileName;
-
-            if (!Storage::disk('local')->exists($path)) {
-                return $this->errorResponse(
-                    404,
-                    'Not Found',
-                    'File Not Found'
-                );
-            }
-
-            $absolutePath = Storage::disk('local')->path($path);
-            return response()->download($absolutePath);
-        } catch (Exception $e) {
-            return $this->errorResponse(
-                500,
-                'Internal Server Error',
-                $e->getMessage(),
-            );
-        }
-    }
-
-    /**
-     * Upload avatar cho diễn giả trong sự kiện
-     * 
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function uploadSpeakerAvatar(Request $request)
+        public function uploadSpeakerAvatar(Request $request)
     {
         try {
             // Validate input
@@ -318,6 +252,138 @@ class UploadController extends Controller
                 'Validation Error',
                 $e->validator->errors()->first()
             );
+        } catch (Exception $e) {
+            return $this->errorResponse(
+                500,
+                'Internal Server Error',
+                $e->getMessage()
+            );
+        }
+    }
+
+    public function uploadPages(Request $request)
+    {
+        try {
+            // Validate input
+            $request->validate([
+                'pdf' => 'required|file|mimes:pdf|max:10240', // Max 10MB
+                'paper_id' => 'required|string',
+            ], [
+                'pdf.required' => 'File PDF là bắt buộc',
+                'pdf.mimes' => 'Chỉ chấp nhận file PDF',
+                'pdf.max' => 'Kích thước file không được vượt quá 10MB',
+                'paper_id.required' => 'Mã bài báo là bắt buộc',
+            ]);
+
+            $paperId = $request->input('paper_id');
+
+            // Tìm paper
+            $paper = Paper::find($paperId);
+            if (!$paper) {
+                return $this->errorResponse(
+                    404,
+                    'Not Found',
+                    'Bài báo không tồn tại trong hệ thống'
+                );
+            }
+
+            // Upload file
+            $file = $request->file('pdf');
+            $extension = $file->getClientOriginalExtension();
+
+            // Tạo tên file: Paper_PaperID_Timestamp.pdf
+            $fileName = 'Paper_' . $paperId . '_' . now()->format('Ymd_His') . '.' . $extension;
+
+            // Lưu vào thư mục papers
+            $path = $file->storeAs('papers', $fileName, 'public');
+            $url = Storage::url($path);
+
+            // Xóa file cũ nếu có
+            if ($paper->file_url) {
+                $oldPath = str_replace('/storage/', '', $paper->file_url);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+
+            // Cập nhật file_url cho paper
+            $paper->file_url = $url;
+            $paper->save();
+
+            return $this->successResponse(
+                200,
+                'Upload file PDF bài báo thành công',
+                [
+                    'paper_id' => $paperId,
+                    'title' => $paper->title,
+                    'file_url' => $url,
+                    'file_size' => $file->getSize(),
+                    'uploaded_at' => now()->format('Y-m-d H:i:s')
+                ]
+            );
+
+        } catch (ValidationException $e) {
+            return $this->errorResponse(
+                422,
+                'Validation Error',
+                $e->validator->errors()->first()
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse(
+                500,
+                'Internal Server Error',
+                $e->getMessage()
+            );
+        }
+    }
+
+    public function downloadPaper($paperId)
+    {
+        try {
+            // Tìm paper
+            $paper = Paper::find($paperId);
+            if (!$paper) {
+                return $this->errorResponse(
+                    404,
+                    'Not Found',
+                    'Bài báo không tồn tại trong hệ thống'
+                );
+            }
+
+            // Kiểm tra file_url có tồn tại không
+            if (!$paper->file_url) {
+                return $this->errorResponse(
+                    404,
+                    'Not Found',
+                    'Bài báo chưa có file PDF'
+                );
+            }
+
+            // Lấy đường dẫn file từ file_url
+            $path = str_replace('/storage/', '', $paper->file_url);
+
+            // Kiểm tra file có tồn tại không
+            if (!Storage::disk('public')->exists($path)) {
+                return $this->errorResponse(
+                    404,
+                    'Not Found',
+                    'File PDF không tồn tại trên hệ thống'
+                );
+            }
+
+            // Tăng số lượt download
+            $paper->increment('download');
+
+            // Lấy đường dẫn tuyệt đối của file
+            $absolutePath = Storage::disk('public')->path($path);
+
+            // Tạo tên file download với title của paper
+            $safeTitle = preg_replace('/[^A-Za-z0-9_\-]/', '_', $paper->title);
+            $downloadName = $safeTitle . '.pdf';
+
+            // Download file
+            return response()->download($absolutePath, $downloadName);
+
         } catch (Exception $e) {
             return $this->errorResponse(
                 500,
