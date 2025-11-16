@@ -24,6 +24,22 @@ type ResetPointsResponse {
     new_points: Int!
 }
 
+type UpdateAlertResponse {
+    success: Boolean!
+    message: String!
+    alert: AlertData
+}
+
+type AlertData {
+    alert_index: Int
+    title: String
+    message: String
+    type: String
+    is_read: Boolean
+    is_deleted: Boolean
+    created_at: String
+}
+
 # Mutations
 extend type Mutation {
     # Reset điểm cho toàn bộ người dùng
@@ -33,4 +49,14 @@ extend type Mutation {
         @field(
             resolver: "App\\GraphQL\\Mutations\\UserMutation@resetAllUserPoints"
         )
+
+    # Cập nhật trạng thái một alert
+    updateAlert(
+        user_id: String!
+        alert_index: Int!
+        is_read: Boolean
+        is_deleted: Boolean
+    ): UpdateAlertResponse!
+        @middleware(checks: ["jwt.auth", "active"])
+        @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@updateAlert")
 }
