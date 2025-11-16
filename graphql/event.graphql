@@ -126,7 +126,8 @@ extend type Mutation {
         )
 
     "Xóa sự kiện"
-    deleteEvent(id: ID! @eq): Event
+    deleteEvent(id: ID!): Boolean!
         @middleware(checks: ["jwt.auth", "active"])
-        @delete
+        @checkPermission(permission: "delete-event")
+        @field(resolver: "App\\GraphQL\\Mutations\\EventMutation@delete")
 }

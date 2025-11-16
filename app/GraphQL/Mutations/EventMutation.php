@@ -3,6 +3,8 @@
 namespace App\GraphQL\Mutations;
 
 use App\Models\Event;
+use App\Models\Registration;
+use App\Models\Paper;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\CreateEventRequest;
 use App\Http\Requests\UpdateEventRequest;
@@ -132,5 +134,39 @@ class EventMutation
         }
 
         return $event->addApprovalStatus($status);
+    }
+
+    public function delete($_, array $args)
+    {
+        try {
+            $event = Event::findOrFail($args['id']);
+
+            // Kiểm tra xem có đăng ký nào không (bao gồm cả đã hủy)
+            $registrationCount = Registration::where('event_id', (string) $event->_id)->count();
+            
+            if ($registrationCount > 0) {
+                throw ValidationException::withMessages([
+                    'event_id' => ['Không thể xóa sự kiện này vì đã có người đăng ký. Vui lòng hủy tất cả đăng ký trước.'],
+                ]);
+            }
+
+            // Kiểm tra xem có bài báo nào thuộc sự kiện không
+            $paperCount = Paper::where('event_id', (string) $event->_id)->count();
+            
+            if ($paperCount > 0) {
+                throw ValidationException::withMessages([
+                    'event_id' => ['Không thể xóa sự kiện này vì đã có bài báo liên kết. Vui lòng xóa tất cả bài báo trước.'],
+                ]);
+            }
+
+            // Xóa sự kiện
+            $event->delete();
+
+            return true;
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (Exception $e) {
+            throw new Exception('Failed to delete event: ' . $e->getMessage());
+        }
     }
 }
