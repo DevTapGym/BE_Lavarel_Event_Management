@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
-use MongoDB\Laravel\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-
+use MongoDB\Laravel\Eloquent\Model;
 
 class Event extends Model
 {
     protected $connection = 'mongodb';
+
     protected $collection = 'events';
 
     protected static function boot()
@@ -47,13 +48,14 @@ class Event extends Model
         'topic',
         'capacity',
         'waiting_capacity',
-        'status_history', //'UPCOMING', 'OPEN', 'ONGOING', 'ENDED', 'CANCELLED'
+        'status_history', // 'UPCOMING', 'OPEN', 'ONGOING', 'ENDED', 'CANCELLED'
         'image_url',
-        'approval_history', //WAITING', 'APPROVED', 'REJECTED'
+        'approval_history', // WAITING', 'APPROVED', 'REJECTED'
         'current_confirmed',
         'current_waiting',
         'speakers', // Mảng các đối tượng diễn giả
     ];
+
     public $timestamps = true;
 
     protected $casts = [
@@ -91,8 +93,85 @@ class Event extends Model
             $nextStatus = $workflow[$index + 1];
         }
 
+        // Nếu chuyển sang ENDED, xử lý trừ điểm cho người không tham dự
+        if ($nextStatus === 'ENDED') {
+            $this->processNoShowPenalties();
+        }
+
         $this->addStatus($nextStatus);
+
         return $nextStatus;
+    }
+
+    /**
+     * Xử lý trừ điểm cho những người đăng ký CONFIRMED nhưng không điểm danh
+     */
+    private function processNoShowPenalties()
+    {
+        try {
+            // Lấy tất cả registrations của event này
+            $registrations = Registration::where('event_id', (string) $this->_id)->get();
+
+            $pointsToDeduct = 7; // Trừ 7 điểm
+            $processedCount = 0;
+
+            foreach ($registrations as $registration) {
+                // Chỉ xử lý những registration CONFIRMED và chưa điểm danh
+                if ($registration->getCurrentStatusAttribute() !== 'CONFIRMED') {
+                    continue;
+                }
+
+                if ($registration->is_attended) {
+                    continue; // Đã điểm danh, bỏ qua
+                }
+
+                // Kiểm tra đã trừ điểm cho registration này chưa
+                $existingHistory = HistoryPoints::where('user_id', $registration->user_id)
+                    ->where('event_id', (string) $this->_id)
+                    ->where('action_type', 'NO_SHOW')
+                    ->first();
+
+                if ($existingHistory) {
+                    continue; // Đã trừ điểm rồi, bỏ qua
+                }
+
+                // Lấy user
+                $user = User::find($registration->user_id);
+                if (! $user) {
+                    Log::warning("Không tìm thấy user {$registration->user_id} khi xử lý NO_SHOW");
+
+                    continue;
+                }
+
+                // Trừ điểm
+                $oldPoint = $user->reputation_score ?? 0;
+                $newPoint = max(0, $oldPoint - $pointsToDeduct); // Không cho điểm âm
+
+                // Cập nhật điểm cho user
+                $user->reputation_score = $newPoint;
+                $user->save();
+
+                // Ghi vào lịch sử điểm
+                HistoryPoints::logChange(
+                    userId: (string) $user->_id,
+                    eventId: (string) $this->_id,
+                    oldPoint: $oldPoint,
+                    newPoint: $newPoint,
+                    actionType: 'NO_SHOW',
+                    reason: "Không tham dự sự kiện: {$this->title}"
+                );
+
+                $processedCount++;
+                Log::info("Đã trừ {$pointsToDeduct} điểm từ user {$user->_id} ({$user->email}) vì không tham dự event {$this->_id}");
+            }
+
+            if ($processedCount > 0) {
+                Log::info("Đã xử lý trừ điểm cho {$processedCount} người dùng không tham dự event {$this->_id}");
+            }
+        } catch (\Exception $e) {
+            Log::error("Lỗi khi xử lý NO_SHOW penalties cho event {$this->_id}: ".$e->getMessage());
+            // Không throw exception để không làm gián đoạn việc chuyển trạng thái
+        }
     }
 
     public function cancel()
@@ -100,7 +179,7 @@ class Event extends Model
         $this->addStatus('CANCELLED');
     }
 
-    /** 
+    /**
      * Thêm trạng thái mới vào lịch sử trạng thái
      */
     public function addStatus(string $name)
@@ -123,16 +202,16 @@ class Event extends Model
     {
         $history = $this->status_history ?? [];
         $last = end($history);
+
         return $last['name'] ?? null;
     }
-
 
     /* ---------------- APPROVAL METHODS ---------------- */
     public function addApprovalStatus(string $status)
     {
         $allowed = ['APPROVED', 'REJECTED'];
 
-        if (!in_array($status, $allowed)) {
+        if (! in_array($status, $allowed)) {
             throw ValidationException::withMessages([
                 'approval_status' => ['Trạng thái phê duyệt không hợp lệ. Chỉ được APPROVED hoặc REJECTED.'],
             ]);
@@ -160,6 +239,7 @@ class Event extends Model
     {
         $history = $this->approval_history ?? [];
         $last = end($history);
+
         return $last['name'] ?? null;
     }
 }
