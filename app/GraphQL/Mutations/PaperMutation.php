@@ -2,33 +2,33 @@
 
 namespace App\GraphQL\Mutations;
 
-use App\Models\Paper;
-use App\Models\Event;
-use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\CreatePaperRequest;
 use App\Http\Requests\UpdatePaperRequest;
+use App\Models\Event;
+use App\Models\Paper;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use Exception;
 
 class PaperMutation
 {
     /**
      * Tạo paper mới
-     * 
-     * @param mixed $_ 
-     * @param array $args
+     *
+     * @param  mixed  $_
      * @return Paper
+     *
      * @throws ValidationException
      */
     public function create($_, array $args)
     {
-        $request = new CreatePaperRequest();
+        $request = new CreatePaperRequest;
         $validator = Validator::make($args, $request->rules(), $request->messages());
         $validator->validate();
 
         // Kiểm tra event_id có tồn tại không
         $event = Event::find($args['event_id']);
-        if (!$event) {
+        if (! $event) {
             throw ValidationException::withMessages([
                 'event_id' => ['Sự kiện không tồn tại trong hệ thống.'],
             ]);
@@ -53,21 +53,21 @@ class PaperMutation
 
     /**
      * Cập nhật paper
-     * 
-     * @param mixed $_
-     * @param array $args
+     *
+     * @param  mixed  $_
      * @return Paper
+     *
      * @throws ValidationException
      */
     public function update($_, array $args)
     {
-        $request = new UpdatePaperRequest();
+        $request = new UpdatePaperRequest;
         $validator = Validator::make($args, $request->rules(), $request->messages());
         $validator->validate();
 
         // Tìm paper cần cập nhật
         $paper = Paper::find($args['_id']);
-        if (!$paper) {
+        if (! $paper) {
             throw ValidationException::withMessages([
                 '_id' => ['Paper không tồn tại trong hệ thống.'],
             ]);
@@ -76,7 +76,7 @@ class PaperMutation
         // Nếu có event_id mới, kiểm tra tồn tại
         if (isset($args['event_id'])) {
             $event = Event::find($args['event_id']);
-            if (!$event) {
+            if (! $event) {
                 throw ValidationException::withMessages([
                     'event_id' => ['Sự kiện không tồn tại trong hệ thống.'],
                 ]);
@@ -92,7 +92,7 @@ class PaperMutation
             'file_url',
             'category',
             'language',
-            'keywords'
+            'keywords',
         ];
 
         foreach ($updateFields as $field) {
@@ -102,15 +102,16 @@ class PaperMutation
         }
 
         $paper->save();
+
         return $paper->fresh();
     }
 
     /**
      * Xóa paper
-     * 
-     * @param mixed $_
-     * @param array $args
+     *
+     * @param  mixed  $_
      * @return Paper
+     *
      * @throws ValidationException
      */
     public function delete($_, array $args)
@@ -127,10 +128,18 @@ class PaperMutation
 
         // Tìm paper cần xóa
         $paper = Paper::find($args['_id']);
-        if (!$paper) {
+        if (! $paper) {
             throw ValidationException::withMessages([
                 '_id' => ['Paper không tồn tại trong hệ thống.'],
             ]);
+        }
+
+        // Xóa file PDF nếu có
+        if ($paper->file_url) {
+            $path = str_replace('/storage/', '', $paper->file_url);
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
         }
 
         // Lưu thông tin paper trước khi xóa để trả về

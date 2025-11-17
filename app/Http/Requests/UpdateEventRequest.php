@@ -23,12 +23,10 @@ class UpdateEventRequest extends FormRequest
             'topic' => 'sometimes|nullable|string|max:255',
             'capacity' => 'sometimes|integer|min:1',
             'waiting_capacity' => 'sometimes|integer|min:0',
-            'image_url' => 'sometimes|nullable|url',
             'speakers' => 'sometimes|nullable|array',
             'speakers.*.name' => 'required|string|max:255',
             'speakers.*.email' => 'nullable|email|max:255',
             'speakers.*.phone' => 'nullable|string|max:20',
-            'speakers.*.avatar_url' => 'nullable|url|max:500',
             'speakers.*.organization' => 'nullable|string|max:255',
         ];
     }
@@ -41,8 +39,7 @@ class UpdateEventRequest extends FormRequest
             'end_date.after' => 'Ngày kết thúc phải sau ngày bắt đầu',
             'capacity.min' => 'Số lượng chỗ phải lớn hơn 0',
             'waiting_capacity.min' => 'Số lượng chỗ chờ không được âm',
-            'image_url.url' => 'URL hình ảnh không hợp lệ',
-            
+
             // Speakers validation messages
             'speakers.array' => 'Danh sách diễn giả phải là mảng',
             'speakers.*.name.required' => 'Tên diễn giả là bắt buộc',

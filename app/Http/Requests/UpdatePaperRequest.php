@@ -8,8 +8,6 @@ class UpdatePaperRequest extends FormRequest
 {
     /**
      * Xác định xem người dùng có quyền thực hiện request này không
-     * 
-     * @return bool
      */
     public function authorize(): bool
     {
@@ -18,7 +16,7 @@ class UpdatePaperRequest extends FormRequest
 
     /**
      * Các quy tắc validation cho request
-     * 
+     *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
@@ -30,7 +28,6 @@ class UpdatePaperRequest extends FormRequest
             'author' => 'sometimes|array|min:1',
             'author.*' => 'required|string|max:255',
             'event_id' => 'sometimes|string',
-            'file_url' => 'nullable|url|max:500',
             'category' => 'nullable|string|max:100',
             'language' => 'nullable|string|max:50',
             'keywords' => 'nullable|array',
@@ -40,7 +37,7 @@ class UpdatePaperRequest extends FormRequest
 
     /**
      * Các thông báo lỗi tùy chỉnh
-     * 
+     *
      * @return array<string, string>
      */
     public function messages(): array
