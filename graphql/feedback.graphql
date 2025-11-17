@@ -4,6 +4,7 @@ type Feedback {
     event_id: String!
     rating: Int!
     comments: String
+    is_hidden: Boolean
     registration: Registration @belongsTo
     event: Event @belongsTo
     created_at: DateTime
@@ -22,6 +23,7 @@ input UpdateFeedbackInput {
     event_id: String
     rating: Int
     comments: String
+    is_hidden: Boolean
 }
 
 extend type Query {
