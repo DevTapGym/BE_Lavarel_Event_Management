@@ -93,6 +93,7 @@ class PaperMutation
             'category',
             'language',
             'keywords',
+            'view',
         ];
 
         foreach ($updateFields as $field) {
