@@ -32,6 +32,7 @@ class UpdatePaperRequest extends FormRequest
             'language' => 'nullable|string|max:50',
             'keywords' => 'nullable|array',
             'keywords.*' => 'string|max:100',
+            'view' => 'sometimes|integer|min:0',
         ];
     }
 
@@ -50,6 +51,10 @@ class UpdatePaperRequest extends FormRequest
             // Title
             'title.string' => 'Tiêu đề phải là chuỗi ký tự.',
             'title.max' => 'Tiêu đề không được vượt quá 255 ký tự.',
+
+            // View
+            'view.integer' => 'Lượt xem phải là số nguyên.',
+            'view.min' => 'Lượt xem không được âm.',
 
             // Abstract
             'abstract.string' => 'Tóm tắt phải là chuỗi ký tự.',
