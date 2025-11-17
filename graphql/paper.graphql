@@ -36,6 +36,7 @@ input UpdatePaperInput {
     abstract: String
     author: [String!]
     event_id: ID
+    view: Int
     file_url: String
     category: String
     language: String
