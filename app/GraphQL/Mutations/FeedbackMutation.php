@@ -2,11 +2,11 @@
 
 namespace App\GraphQL\Mutations;
 
+use App\Models\Event;
 use App\Models\Feedback;
 use App\Models\Registration;
-use App\Models\Event;
-use Illuminate\Validation\ValidationException;
 use GraphQL\Error\Error;
+use Illuminate\Validation\ValidationException;
 
 class FeedbackMutation
 {
@@ -17,7 +17,7 @@ class FeedbackMutation
 
             // Kiểm tra registration có tồn tại không
             $registration = Registration::find($input['registration_id']);
-            if (!$registration) {
+            if (! $registration) {
                 throw ValidationException::withMessages([
                     'registration_id' => ['Registration không tồn tại.'],
                 ]);
@@ -25,7 +25,7 @@ class FeedbackMutation
 
             // Kiểm tra event có tồn tại không
             $event = Event::find($input['event_id']);
-            if (!$event) {
+            if (! $event) {
                 throw ValidationException::withMessages([
                     'event_id' => ['Sự kiện không tồn tại.'],
                 ]);
@@ -39,7 +39,7 @@ class FeedbackMutation
             }
 
             // Kiểm tra user đã tham dự sự kiện chưa (is_attended)
-            if (!$registration->is_attended) {
+            if (! $registration->is_attended) {
                 throw ValidationException::withMessages([
                     'registration_id' => ['Bạn chưa tham dự sự kiện này. Chỉ có thể feedback sau khi đã tham dự.'],
                 ]);
@@ -75,7 +75,7 @@ class FeedbackMutation
         } catch (ValidationException $e) {
             throw $e;
         } catch (\Exception $e) {
-            throw new Error('Failed to create feedback: ' . $e->getMessage());
+            throw new Error('Failed to create feedback: '.$e->getMessage());
         }
     }
 
@@ -96,6 +96,7 @@ class FeedbackMutation
                 'event_id' => $input['event_id'] ?? null,
                 'rating' => $input['rating'] ?? null,
                 'comments' => $input['comments'] ?? null,
+                'is_hidden' => $input['is_hidden'] ?? null,
             ], function ($value) {
                 return $value !== null;
             });
@@ -104,7 +105,7 @@ class FeedbackMutation
 
             return $feedback->fresh();
         } catch (\Exception $e) {
-            throw new Error('Failed to update feedback: ' . $e->getMessage());
+            throw new Error('Failed to update feedback: '.$e->getMessage());
         }
     }
 
@@ -116,7 +117,7 @@ class FeedbackMutation
 
             return $feedback;
         } catch (\Exception $e) {
-            throw new Error('Failed to delete feedback: ' . $e->getMessage());
+            throw new Error('Failed to delete feedback: '.$e->getMessage());
         }
     }
 }

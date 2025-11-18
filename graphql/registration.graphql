@@ -28,12 +28,16 @@ type RegistrationStatusHistory {
 
 extend type Query {
     "Lấy tất cả registrations"
-    registrations: [Registration!]! @all
+    registrations: [Registration!]!
+        @all
+        @middleware(checks: ["jwt.auth", "active"])
+        @checkPermission(permission: "view-registrations")
 
     "Lấy registrations theo user_id"
     registrationsByUser(user_id: String!): [Registration!]!
         @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Queries\\RegistrationResolver@byUser")
+        @checkPermission(permission: "view-registrations-by-user")
 }
 
 extend type Mutation {
@@ -41,15 +45,19 @@ extend type Mutation {
     createRegistration(user_id: String!, event_id: String!): Registration!
         @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Mutations\\RegistrationMutation@create")
+        @checkPermission(permission: "create-registration")
 
     "Hủy registration"
     cancelRegistration(id: ID!, cancel_reason: String): Registration
         @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Mutations\\RegistrationMutation@cancel")
+        @checkPermission(permission: "cancel-registration")
 
     "Điểm danh bằng email và mã code"
     checkInRegistration(email: String!, code: String!): Registration!
         @field(
             resolver: "App\\GraphQL\\Mutations\\RegistrationMutation@checkIn"
         )
+        @middleware(checks: ["jwt.auth", "active"])
+        @checkPermission(permission: "check-in-registration")
 }

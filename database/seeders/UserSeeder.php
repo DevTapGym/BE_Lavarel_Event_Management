@@ -2,10 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\Role;
+use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
 {
@@ -26,5 +24,22 @@ class UserSeeder extends Seeder
         $admin->save();
 
         $this->command->info('Admin user created or already exists');
+
+        // Tạo account Organizer
+        $organizer = User::firstOrCreate(
+            ['email' => 'organizer@gmail.com'],
+            [
+                'name' => 'Organizer',
+                'password' => bcrypt('123456'),
+                'avatar' => null,
+                'phone' => null,
+                'is_active' => true,
+            ]
+        );
+
+        $organizer->roles = ['ORGANIZER'];
+        $organizer->save();
+
+        $this->command->info('Organizer user created or already exists');
     }
 }

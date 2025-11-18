@@ -11,10 +11,16 @@ type Location {
 
 extend type Query {
     "Lấy tất cả locations"
-    locations: [Location!]! @all
+    locations: [Location!]!
+        @all
+        @middleware(checks: ["jwt.auth", "active"])
+        @checkPermission(permission: "view-locations")
 
     "Lấy location theo ID"
-    location(id: ID! @eq): Location @find
+    location(id: ID! @eq): Location
+        @find
+        @middleware(checks: ["jwt.auth", "active"])
+        @checkPermission(permission: "view-detail-locations")
 }
 
 extend type Mutation {
@@ -25,8 +31,9 @@ extend type Mutation {
         address: String
         capacity: Int
     ): Location!
-        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Mutations\\LocationMutation@create")
+        @checkPermission(permission: "create-location")
 
     "Cập nhật location"
     updateLocation(
@@ -36,11 +43,13 @@ extend type Mutation {
         address: String
         capacity: Int
     ): Location
-        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Mutations\\LocationMutation@update")
+        @checkPermission(permission: "update-location")
 
     "Xóa location"
     deleteLocation(id: ID!): Location
-        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Mutations\\LocationMutation@delete")
+        @checkPermission(permission: "delete-location")
 }

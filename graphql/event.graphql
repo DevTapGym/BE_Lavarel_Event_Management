@@ -61,8 +61,12 @@ input SpeakerInput {
 extend type Query {
     events: [Event!]!
         @field(resolver: "App\\GraphQL\\Queries\\EventResolver@all")
+        @middleware(checks: ["jwt.auth", "active"])
+        @checkPermission(permission: "view-events")
     event(id: ID!): Event
         @field(resolver: "App\\GraphQL\\Queries\\EventResolver@find")
+        @middleware(checks: ["jwt.auth", "active"])
+        @checkPermission(permission: "view-detail-events")
 }
 
 extend type Mutation {

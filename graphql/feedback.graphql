@@ -27,22 +27,29 @@ input UpdateFeedbackInput {
 }
 
 extend type Query {
-    feedbacks: [Feedback!]! @middleware(checks: ["jwt.auth", "active"]) @all
+    feedbacks: [Feedback!]!
+        @middleware(checks: ["jwt.auth", "active"])
+        @all
+        @checkPermission(permission: "view-feedbacks")
 
     "Lấy tất cả feedbacks của một user dựa trên registration"
     feedbacksByUser(user_id: String!): [Feedback!]!
         @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Queries\\FeedbackResolver@byUser")
+        @checkPermission(permission: "view-feedbacks-by-user")
 }
 
 extend type Mutation {
     createFeedback(input: CreateFeedbackInput!): Feedback!
         @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Mutations\\FeedbackMutation@create")
+        @checkPermission(permission: "create-feedback")
     updateFeedback(id: ID!, input: UpdateFeedbackInput!): Feedback!
         @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Mutations\\FeedbackMutation@update")
+        @checkPermission(permission: "update-feedback")
     deleteFeedback(id: ID!): Feedback!
         @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Mutations\\FeedbackMutation@delete")
+        @checkPermission(permission: "delete-feedback")
 }

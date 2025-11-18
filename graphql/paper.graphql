@@ -45,8 +45,14 @@ input UpdatePaperInput {
 
 # Queries
 extend type Query {
-    papers: [Paper!]! @all
-    paper(_id: ID! @eq): Paper @find
+    papers: [Paper!]!
+        @all
+        @checkPermission(permission: "view-papers")
+        @middleware(checks: ["jwt.auth", "active"])
+    paper(_id: ID! @eq): Paper
+        @find
+        @checkPermission(permission: "view-detail-papers")
+        @middleware(checks: ["jwt.auth", "active"])
 }
 
 # Mutations
@@ -54,12 +60,18 @@ extend type Mutation {
     # Tạo paper mới
     createPaper(input: CreatePaperInput! @spread): Paper
         @field(resolver: "App\\GraphQL\\Mutations\\PaperMutation@create")
+        @checkPermission(permission: "create-paper")
+        @middleware(checks: ["jwt.auth", "active"])
 
     # Cập nhật paper
     updatePaper(input: UpdatePaperInput! @spread): Paper
         @field(resolver: "App\\GraphQL\\Mutations\\PaperMutation@update")
+        @checkPermission(permission: "update-paper")
+        @middleware(checks: ["jwt.auth", "active"])
 
     # Xóa paper
     deletePaper(_id: ID!): Paper
         @field(resolver: "App\\GraphQL\\Mutations\\PaperMutation@delete")
+        @checkPermission(permission: "delete-paper")
+        @middleware(checks: ["jwt.auth", "active"])
 }

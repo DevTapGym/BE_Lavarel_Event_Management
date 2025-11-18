@@ -40,6 +40,15 @@ type AlertData {
     created_at: String
 }
 
+type ReputationAlertResponse {
+    success: Boolean!
+    message: String!
+    warning_count: Int!
+    blocked_count: Int!
+    skipped_count: Int!
+    total_processed: Int!
+}
+
 # Mutations
 extend type Mutation {
     # Reset điểm cho toàn bộ người dùng
@@ -49,6 +58,8 @@ extend type Mutation {
         @field(
             resolver: "App\\GraphQL\\Mutations\\UserMutation@resetAllUserPoints"
         )
+        @middleware(checks: ["jwt.auth", "active"])
+        @checkPermission(permission: "reset-all-user-points")
 
     # Cập nhật trạng thái một alert
     updateAlert(
@@ -59,4 +70,13 @@ extend type Mutation {
     ): UpdateAlertResponse!
         @middleware(checks: ["jwt.auth", "active"])
         @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@updateAlert")
+        @checkPermission(permission: "update-user-alert")
+
+    # Kiểm tra và gửi cảnh báo cho người dùng có điểm thấp
+    checkAndSendReputationAlerts: ReputationAlertResponse!
+        @field(
+            resolver: "App\\GraphQL\\Mutations\\UserMutation@checkAndSendReputationAlerts"
+        )
+        @middleware(checks: ["jwt.auth", "active"])
+        @checkPermission(permission: "send-reputation-alerts")
 }
