@@ -4,13 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
-use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use Tymon\JWTAuth\Facades\JWTAuth;
 use Exception;
-
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -18,7 +17,7 @@ class AuthController extends Controller
     {
         $credentials = $request->validated();
 
-        if (!Auth::attempt($credentials)) {
+        if (! Auth::attempt($credentials)) {
             return $this->errorResponse(
                 401,
                 'Unauthorized',
@@ -47,7 +46,7 @@ class AuthController extends Controller
             array_merge(
                 $refreshTokenPayload,
                 [
-                    'exp' => now()->addDays(14)->timestamp // 14 ngày
+                    'exp' => now()->addDays(14)->timestamp, // 14 ngày
                 ]
             )
         );
@@ -77,24 +76,24 @@ class AuthController extends Controller
     {
         // Tạo User
         $user = User::create([
-            'name'      => $request->username,
-            'password'  => bcrypt($request->password),
-            'email'     => $request->email,
-            'avatar'    => null,
-            'phone'     => null,
+            'name' => $request->username,
+            'password' => bcrypt($request->password),
+            'email' => $request->email,
+            'avatar' => null,
+            'phone' => null,
         ]);
 
         // Gán role cho user
-        $user->assignRole('ADMIN');
+        $user->assignRole('USER');
 
         return $this->successResponse(
             201,
             'Register successful',
             [
-                'username'    => $user->name,
-                'email'       => $user->email,
-                'is_active'    => $user->is_active,
-                'created_at'   => $user->created_at,
+                'username' => $user->name,
+                'email' => $user->email,
+                'is_active' => $user->is_active,
+                'created_at' => $user->created_at,
             ],
         );
     }
@@ -107,13 +106,13 @@ class AuthController extends Controller
             200,
             'Get user info successful',
             [
-                'id'        => $user->id,
-                'name'      => $user->name,
-                'email'     => $user->email,
-                'phone'     => $user->phone,
-                'avatar'    => $user->avatar,
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'avatar' => $user->avatar,
                 'is_active' => $user->is_active,
-                'roles'      => $user->roles,
+                'roles' => $user->roles,
                 'reputation_score' => $user->reputation_score ?? 0,
                 'alerts' => $user->alerts ?? [],
             ]
@@ -124,7 +123,7 @@ class AuthController extends Controller
     {
         try {
             $user = Auth::user();
-            if (!$user) {
+            if (! $user) {
                 return $this->errorResponse(401, 'Unauthorized', 'User not authenticated');
             }
 
@@ -153,7 +152,7 @@ class AuthController extends Controller
                 ]
             );
         } catch (Exception $e) {
-            return $this->errorResponse(500, 'Internal server error', 'Could not update profile: ' . $e->getMessage());
+            return $this->errorResponse(500, 'Internal server error', 'Could not update profile: '.$e->getMessage());
         }
     }
 
@@ -162,7 +161,7 @@ class AuthController extends Controller
         try {
             $user = Auth::user();
 
-            if (!$user) {
+            if (! $user) {
                 return $this->errorResponse(
                     401,
                     'Unauthorized',
@@ -176,7 +175,7 @@ class AuthController extends Controller
                 'new_password_confirmation' => 'required|string',
             ]);
 
-            if (!password_verify($validated['current_password'], $user->password)) {
+            if (! password_verify($validated['current_password'], $user->password)) {
                 return $this->errorResponse(
                     400,
                     'Bad Request',
@@ -193,11 +192,11 @@ class AuthController extends Controller
             }
 
             $user->update([
-                'password' => bcrypt($validated['new_password'])
+                'password' => bcrypt($validated['new_password']),
             ]);
 
             // Vô hiệu hóa tất cả token hiện tại để buộc người dùng đăng nhập lại
-            //$user->current_jti = null;
+            // $user->current_jti = null;
             $user->save();
 
             return $this->successResponse(
@@ -209,7 +208,7 @@ class AuthController extends Controller
             return $this->errorResponse(
                 500,
                 'Internal server error',
-                'Could not change password: ' . $e->getMessage()
+                'Could not change password: '.$e->getMessage()
             );
         }
     }
@@ -245,7 +244,7 @@ class AuthController extends Controller
                 true
             );
         } catch (Exception $e) {
-            return $this->errorResponse(500, 'Internal server error', 'Could not logout: ' . $e->getMessage());
+            return $this->errorResponse(500, 'Internal server error', 'Could not logout: '.$e->getMessage());
         }
     }
 
@@ -253,19 +252,19 @@ class AuthController extends Controller
     {
         $refreshToken = $request->cookie('refresh_token');
 
-        if (!$refreshToken) {
+        if (! $refreshToken) {
             return $this->errorResponse(400, 'Unauthorized', 'Refresh token not found');
         }
 
         try {
             $payload = JWTAuth::getJWTProvider()->decode($refreshToken);
 
-            if (!isset($payload['type']) || $payload['type'] !== 'refresh') {
+            if (! isset($payload['type']) || $payload['type'] !== 'refresh') {
                 return $this->errorResponse(400, 'Unauthorized', 'Invalid refresh token type');
             }
 
             $user = User::find($payload['sub']);
-            if (!$user) {
+            if (! $user) {
                 return $this->errorResponse(400, 'Unauthorized', 'User not found');
             }
 
@@ -293,7 +292,7 @@ class AuthController extends Controller
                 array_merge(
                     $newRefreshTokenPayload,
                     [
-                        'exp' => now()->addDays(14)->timestamp
+                        'exp' => now()->addDays(14)->timestamp,
                     ]
                 )
             );
@@ -312,7 +311,7 @@ class AuthController extends Controller
                 true
             );
         } catch (Exception $e) {
-            return $this->errorResponse(400, 'Unauthorized', 'Invalid or expired refresh token: ' . $e->getMessage());
+            return $this->errorResponse(400, 'Unauthorized', 'Invalid or expired refresh token: '.$e->getMessage());
         }
     }
 
@@ -320,11 +319,11 @@ class AuthController extends Controller
     {
         $data = [
             'account' => [
-                'email'     => $user->email,
-                'name'      => $user->name,
-                'avatar'    => $user->avatar,
-                'phone'     => $user->customer->phone ?? null,
-                'roles'     => $user->roles ?? 'USER',
+                'email' => $user->email,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+                'phone' => $user->customer->phone ?? null,
+                'roles' => $user->roles ?? 'USER',
                 'is_active' => $user->is_active,
                 'reputation_score' => $user->reputation_score ?? 0,
                 'alerts' => $user->alerts ?? [],
