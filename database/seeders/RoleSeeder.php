@@ -47,6 +47,8 @@ class RoleSeeder extends Seeder
             'edit profile',
             'change password',
 
+            'view-events',
+            'view-detail-events',
             'create-event',
             'update-event',
             'delete-event',
@@ -76,7 +78,6 @@ class RoleSeeder extends Seeder
             'upload speaker avatar',
             'upload event image',
             'upload paper file',
-
         ];
 
         $organizer = Role::updateOrCreate(
@@ -110,10 +111,18 @@ class RoleSeeder extends Seeder
             'get info',
             'edit profile',
             'change password',
+            'upload avatar',
 
             'view-registrations-by-user',
             'create-registration',
             'cancel-registration',
+
+            'get notifications by event',
+
+            'view-user-history-points',
+
+            'view-events',
+            'view-detail-events',
 
             'view-feedbacks',
             'view-feedbacks-by-user',
@@ -123,6 +132,7 @@ class RoleSeeder extends Seeder
 
             'view-papers',
             'view-detail-papers',
+            'update-user-alert',
 
             'download paper',
         ];
