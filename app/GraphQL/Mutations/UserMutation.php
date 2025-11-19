@@ -119,10 +119,10 @@ class UserMutation
 
     /**
      * Kiểm tra và gửi cảnh báo cho người dùng có điểm uy tín thấp
-     * 
-     * @param mixed $_
-     * @param array $args
+     *
+     * @param  mixed  $_
      * @return array
+     *
      * @throws Exception
      */
     public function checkAndSendReputationAlerts($_, array $args)
@@ -141,7 +141,7 @@ class UserMutation
             foreach ($lowReputationUsers as $user) {
                 try {
                     $result = $this->processUserReputation($user);
-                    
+
                     if ($result['alert_sent']) {
                         if ($result['type'] === 'BLOCK_REGISTRATION') {
                             $blockedCount++;
@@ -154,6 +154,7 @@ class UserMutation
                     }
                 } catch (Exception $e) {
                     $skippedCount++;
+
                     continue;
                 }
             }
@@ -168,15 +169,81 @@ class UserMutation
             ];
 
         } catch (Exception $e) {
-            throw new Exception('Lỗi khi kiểm tra và gửi cảnh báo: ' . $e->getMessage());
+            throw new Exception('Lỗi khi kiểm tra và gửi cảnh báo: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Tạo user mới
+     *
+     * @param  mixed  $_
+     * @return array
+     *
+     * @throws Exception
+     */
+    public function createUser($_, array $args)
+    {
+        try {
+            // Kiểm tra email đã tồn tại chưa
+            $existingUser = User::where('email', $args['email'])->first();
+            if ($existingUser) {
+                throw new Exception('Email đã tồn tại trong hệ thống');
+            }
+
+            // Tạo user mới
+            $user = User::create([
+                'name' => $args['name'],
+                'email' => $args['email'],
+                'password' => bcrypt($args['password']),
+                'phone' => $args['phone'] ?? null,
+                'is_active' => true,
+                'reputation_score' => 70,
+                'roles' => ['ORGANIZER'],
+            ]);
+
+            return [
+                'success' => true,
+                'message' => 'Tạo người dùng thành công',
+                'user' => $user,
+            ];
+
+        } catch (Exception $e) {
+            throw new Exception('Lỗi khi tạo người dùng: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Reset mật khẩu cho user
+     *
+     * @param  mixed  $_
+     * @return array
+     *
+     * @throws Exception
+     */
+    public function resetUserPassword($_, array $args)
+    {
+        try {
+            $user = User::find($args['user_id']);
+            if (! $user) {
+                throw new Exception('Không tìm thấy người dùng');
+            }
+
+            // Cập nhật mật khẩu mới
+            $user->password = bcrypt($args['new_password']);
+            $user->save();
+
+            return [
+                'success' => true,
+                'message' => 'Reset mật khẩu thành công',
+            ];
+
+        } catch (Exception $e) {
+            throw new Exception('Lỗi khi reset mật khẩu: '.$e->getMessage());
         }
     }
 
     /**
      * Xử lý reputation của một user cụ thể
-     * 
-     * @param User $user
-     * @return array
      */
     private function processUserReputation(User $user): array
     {
@@ -202,7 +269,7 @@ class UserMutation
                 'message' => "Điểm uy tín của bạn hiện tại là {$score}/100. Bạn không thể đăng ký sự kiện mới vì điểm dưới 50. Vui lòng chờ đến kỳ sau hoặc liên hệ quản trị viên để được hỗ trợ.",
                 'type' => 'BLOCK_REGISTRATION',
             ];
-            
+
             $user->addAlert($alert);
             $alertSent = true;
             $type = 'BLOCK_REGISTRATION';
@@ -226,7 +293,7 @@ class UserMutation
                 'message' => "Điểm uy tín của bạn hiện tại là {$score}/100. Bạn chỉ còn {$pointsToBlock} điểm nữa là sẽ bị chặn đăng ký sự kiện (dưới 50 điểm). Hãy tham gia sự kiện đầy đủ để tránh bị trừ điểm!",
                 'type' => 'WARNING',
             ];
-            
+
             $user->addAlert($alert);
             $alertSent = true;
             $type = 'WARNING';
