@@ -49,6 +49,32 @@ type ReputationAlertResponse {
     total_processed: Int!
 }
 
+type CreateUserResponse {
+    success: Boolean!
+    message: String!
+    user: User
+}
+
+type ResetPasswordResponse {
+    success: Boolean!
+    message: String!
+}
+
+# Queries
+extend type Query {
+    # Lấy tất cả users
+    getAllUser: [User!]!
+        @all
+        @middleware(checks: ["jwt.auth", "active"])
+        @checkPermission(permission: "view-all-users")
+
+    # Lấy thông tin user theo ID
+    getUserById(id: ID! @eq): User
+        @find
+        @middleware(checks: ["jwt.auth", "active"])
+        @checkPermission(permission: "view-user-detail")
+}
+
 # Mutations
 extend type Mutation {
     # Reset điểm cho toàn bộ người dùng
@@ -79,4 +105,26 @@ extend type Mutation {
         )
         @middleware(checks: ["jwt.auth", "active"])
         @checkPermission(permission: "send-reputation-alerts")
+
+    # Tạo user mới
+    createUser(
+        name: String
+        email: String!
+        password: String!
+        phone: String
+    ): CreateUserResponse!
+        @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@createUser")
+        @middleware(checks: ["jwt.auth", "active"])
+        @checkPermission(permission: "create-user")
+
+    # Reset mật khẩu cho user
+    resetUserPassword(
+        user_id: String!
+        new_password: String!
+    ): ResetPasswordResponse!
+        @field(
+            resolver: "App\\GraphQL\\Mutations\\UserMutation@resetUserPassword"
+        )
+        @middleware(checks: ["jwt.auth", "active"])
+        @checkPermission(permission: "reset-user-password")
 }
