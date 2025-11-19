@@ -14,6 +14,7 @@ type Event {
     image_url: String
     current_status: String
     current_approval_status: String
+    created_by: String!
 
     # Lịch sử trạng thái (mảng object)
     status_history: [StatusHistory!]
@@ -67,6 +68,10 @@ extend type Query {
         @field(resolver: "App\\GraphQL\\Queries\\EventResolver@find")
         @middleware(checks: ["jwt.auth", "active"])
         @checkPermission(permission: "view-detail-events")
+    eventsByCreator(email: String!): [Event!]!
+        @field(resolver: "App\\GraphQL\\Queries\\EventResolver@byCreator")
+        @middleware(checks: ["jwt.auth", "active"])
+        @checkPermission(permission: "view-events")
 }
 
 extend type Mutation {
