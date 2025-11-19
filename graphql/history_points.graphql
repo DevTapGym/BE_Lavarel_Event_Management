@@ -1,7 +1,7 @@
 type HistoryPoints {
     _id: ID!
     user_id: String!
-    event_id: String!
+    event_id: String
     old_point: Int!
     new_point: Int!
     change_amount: Int!
