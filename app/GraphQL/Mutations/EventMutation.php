@@ -2,21 +2,22 @@
 
 namespace App\GraphQL\Mutations;
 
-use App\Models\Event;
-use App\Models\Registration;
-use App\Models\Paper;
-use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\CreateEventRequest;
 use App\Http\Requests\UpdateEventRequest;
-use Illuminate\Validation\ValidationException;
+use App\Models\Event;
+use App\Models\Paper;
+use App\Models\Registration;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class EventMutation
 {
     public function create($_, array $args)
     {
-        $request = new CreateEventRequest();
+        $request = new CreateEventRequest;
         $validator = Validator::make($args, $request->rules(), $request->messages());
         $validator->validate();
 
@@ -40,13 +41,18 @@ class EventMutation
             ]);
         }
 
+        // Lấy email từ token
+        $user = Auth::user();
+        $args['created_by'] = $user ? $user->email : null;
+
         $event = Event::create($args);
+
         return $event;
     }
 
     public function update($_, array $args)
     {
-        $request = new UpdateEventRequest();
+        $request = new UpdateEventRequest;
         $validator = Validator::make($args, $request->rules(), $request->messages());
         $validator->validate();
 
@@ -77,14 +83,16 @@ class EventMutation
         }
 
         foreach ($args as $key => $value) {
-            if ($key === 'id') continue;
+            if ($key === 'id') {
+                continue;
+            }
             $event->$key = $value;
         }
 
         $event->save();
+
         return $event->fresh();
     }
-
 
     public function advanceStatus($_, array $args)
     {
@@ -99,7 +107,7 @@ class EventMutation
 
         $nextStatus = $event->advanceStatus();
 
-        if (!$nextStatus) {
+        if (! $nextStatus) {
             throw new Exception('Không thể tiến trạng thái tiếp theo');
         }
 
@@ -118,6 +126,7 @@ class EventMutation
         }
 
         $event->addStatus('CANCELLED');
+
         return $event->fresh();
     }
 
@@ -127,7 +136,7 @@ class EventMutation
 
         // Chỉ cho phép 2 giá trị
         $status = strtoupper($args['status'] ?? '');
-        if (!in_array($status, ['APPROVED', 'REJECTED'])) {
+        if (! in_array($status, ['APPROVED', 'REJECTED'])) {
             throw ValidationException::withMessages([
                 'status' => ['Trạng thái phê duyệt không hợp lệ. Chỉ APPROVED hoặc REJECTED.'],
             ]);
@@ -143,7 +152,7 @@ class EventMutation
 
             // Kiểm tra xem có đăng ký nào không (bao gồm cả đã hủy)
             $registrationCount = Registration::where('event_id', (string) $event->_id)->count();
-            
+
             if ($registrationCount > 0) {
                 throw ValidationException::withMessages([
                     'event_id' => ['Không thể xóa sự kiện này vì đã có người đăng ký. Vui lòng hủy tất cả đăng ký trước.'],
@@ -152,7 +161,7 @@ class EventMutation
 
             // Kiểm tra xem có bài báo nào thuộc sự kiện không
             $paperCount = Paper::where('event_id', (string) $event->_id)->count();
-            
+
             if ($paperCount > 0) {
                 throw ValidationException::withMessages([
                     'event_id' => ['Không thể xóa sự kiện này vì đã có bài báo liên kết. Vui lòng xóa tất cả bài báo trước.'],
@@ -166,7 +175,7 @@ class EventMutation
         } catch (ValidationException $e) {
             throw $e;
         } catch (Exception $e) {
-            throw new Exception('Failed to delete event: ' . $e->getMessage());
+            throw new Exception('Failed to delete event: '.$e->getMessage());
         }
     }
 }

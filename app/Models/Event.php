@@ -54,6 +54,7 @@ class Event extends Model
         'current_confirmed',
         'current_waiting',
         'speakers', // Mảng các đối tượng diễn giả
+        'created_by',
     ];
 
     public $timestamps = true;
