@@ -1,13 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ActivationController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\UploadController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
 // ---------------------
-// Public routes 
+// Public routes
 // ---------------------
 Route::prefix('/v1')->group(function () {
     Route::prefix('/auth')->group(function () {
@@ -19,9 +20,8 @@ Route::prefix('/v1')->group(function () {
     });
 });
 
-
 // ---------------------
-// Protected routes 
+// Protected routes
 // ---------------------
 
 Route::prefix('/v1')->middleware(['jwt.auth'])->group(function () {
@@ -59,5 +59,10 @@ Route::prefix('/v1')->middleware(['jwt.auth', 'check.permission', 'active'])->gr
         Route::get('/paper/{paperId}', [UploadController::class, 'downloadPaper'])->name('download.paper');
     });
 
-    //Route::post('/graphql', [GraphQLController::class, '__invoke']);
+    Route::prefix('/user')->group(function () {
+        Route::get('/export', [UserController::class, 'export'])->name('export.users');
+        Route::post('/import', [UserController::class, 'import'])->name('import.users');
+    });
+
+    // Route::post('/graphql', [GraphQLController::class, '__invoke']);
 });
