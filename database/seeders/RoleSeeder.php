@@ -54,6 +54,12 @@ class RoleSeeder extends Seeder
             'delete-event',
             'cancel-event',
 
+            'view-feedbacks',
+            'view-feedbacks-by-user',
+            'create-feedback',
+            'update-feedback',
+            'delete-feedback',
+
             'add-event-status',
 
             'view-locations',
@@ -118,6 +124,7 @@ class RoleSeeder extends Seeder
             'cancel-registration',
 
             'get notifications by event',
+            'get all notifications',
 
             'view-user-history-points',
 
@@ -148,6 +155,18 @@ class RoleSeeder extends Seeder
         if ($user->wasRecentlyCreated || $user->wasChanged()) {
             $changed = true;
             $this->command->info('Role USER seeded with '.count($userPermissions).' permissions');
+        }
+
+        // Kiểm tra và cập nhật user permissions nếu khác
+        $currentUserPermissions = $user->permissions ?? [];
+        sort($userPermissions);
+        sort($currentUserPermissions);
+
+        if ($currentUserPermissions !== $userPermissions) {
+            $user->permissions = $userPermissions;
+            $user->save();
+            $changed = true;
+            $this->command->info('Updated USER permissions: '.count($userPermissions).' permissions');
         }
 
         if ($changed) {
