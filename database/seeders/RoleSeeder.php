@@ -133,6 +133,8 @@ class RoleSeeder extends Seeder
             'view-events',
             'view-detail-events',
 
+            'update-paper',
+
             'view-feedbacks',
             'view-feedbacks-by-user',
             'create-feedback',
