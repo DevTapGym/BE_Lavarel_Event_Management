@@ -19,6 +19,11 @@ class UserController extends Controller
 
             $exportData = [];
             foreach ($users as $user) {
+                // Bỏ qua admin@gmail.com
+                if ($user->email === 'admin@gmail.com') {
+                    continue;
+                }
+
                 $exportData[] = [
                     'ID' => (string) $user->_id,
                     'Name' => $user->name,

@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\Paper;
 use App\Models\Event;
+use App\Models\Paper;
+use Illuminate\Database\Seeder;
 
 class PaperSeeder extends Seeder
 {
@@ -16,23 +15,18 @@ class PaperSeeder extends Seeder
     {
         // Kiểm tra xem có event nào không
         $events = Event::all();
-        
+
         if ($events->isEmpty()) {
             $this->command->error('Không có event nào trong hệ thống!');
             $this->command->warn('Vui lòng chạy EventSeeder trước: php artisan db:seed --class=EventSeeder');
+
             return;
         }
 
-        $this->command->info('Tìm thấy ' . $events->count() . ' events. Bắt đầu tạo papers...');
+        $this->command->info('Tìm thấy '.$events->count().' events. Bắt đầu tạo papers...');
 
         // Lấy một số event để gán papers
-        $approvedEvents = Event::whereNotNull('approval_history')
-            ->get()
-            ->filter(function ($event) {
-                $approvalHistory = $event->approval_history ?? [];
-                $lastApproval = end($approvalHistory);
-                return $lastApproval && $lastApproval['name'] === 'APPROVED';
-            });
+        $approvedEvents = Event::whereNotNull('approval_history')->get();
 
         if ($approvedEvents->isEmpty()) {
             $this->command->warn('Không có event APPROVED nào. Sẽ sử dụng event bất kỳ...');
@@ -43,6 +37,7 @@ class PaperSeeder extends Seeder
 
         if ($targetEvents->isEmpty()) {
             $this->command->error('Không thể tìm thấy event phù hợp để gán papers!');
+
             return;
         }
 
@@ -52,7 +47,7 @@ class PaperSeeder extends Seeder
                 'abstract' => 'This paper presents a comprehensive study on the application of deep learning techniques in medical image analysis. We explore various convolutional neural network architectures including ResNet, VGG, and DenseNet for automated disease detection from X-ray and MRI scans. Our experimental results demonstrate that deep learning models can achieve diagnostic accuracy comparable to experienced radiologists, with potential applications in early disease detection and treatment planning.',
                 'author' => ['Dr. Nguyen Van Anh', 'Dr. Tran Thi Binh', 'Prof. Le Hoang Nam'],
                 'event_id' => (string) $targetEvents->first()->_id,
-                'file_url' => 'https://example.com/papers/deep-learning-medical-imaging.pdf',
+                'file_url' => '',
                 'view' => 245,
                 'download' => 89,
                 'category' => 'Artificial Intelligence',
@@ -64,7 +59,7 @@ class PaperSeeder extends Seeder
                 'abstract' => 'Nghiên cứu này trình bày việc ứng dụng công nghệ Blockchain trong quản lý chuỗi cung ứng tại Việt Nam. Chúng tôi đề xuất một kiến trúc hệ thống dựa trên Ethereum smart contracts để theo dõi và xác thực nguồn gốc sản phẩm. Kết quả triển khai thí điểm cho thấy hệ thống giúp tăng độ minh bạch, giảm chi phí vận hành và nâng cao niềm tin của người tiêu dùng.',
                 'author' => ['TS. Pham Minh Tuan', 'ThS. Do Thu Ha'],
                 'event_id' => (string) $targetEvents->first()->_id,
-                'file_url' => 'https://example.com/papers/blockchain-supply-chain.pdf',
+                'file_url' => '',
                 'view' => 182,
                 'download' => 67,
                 'category' => 'Blockchain',
@@ -76,7 +71,7 @@ class PaperSeeder extends Seeder
                 'abstract' => 'Bài báo này nghiên cứu các phương pháp Machine Learning cho xử lý ngôn ngữ tự nhiên tiếng Việt. Chúng tôi so sánh hiệu quả của các mô hình BERT, PhoBERT và mBERT trong các tác vụ phân loại văn bản, nhận dạng thực thể có tên, và phân tích cảm xúc. Kết quả thực nghiệm cho thấy PhoBERT đạt độ chính xác cao nhất với F1-score 94.2% trong tác vụ phân loại văn bản tiếng Việt.',
                 'author' => ['GS.TS. Hoang Van Phuong', 'TS. Vu Thi Mai', 'ThS. Nguyen Thanh Cong'],
                 'event_id' => (string) $targetEvents->last()->_id,
-                'file_url' => 'https://example.com/papers/ml-nlp-vietnamese.pdf',
+                'file_url' => '',
                 'view' => 312,
                 'download' => 145,
                 'category' => 'Natural Language Processing',
@@ -88,7 +83,7 @@ class PaperSeeder extends Seeder
                 'abstract' => 'The rapid growth of Internet of Things (IoT) devices has introduced new security challenges. This paper analyzes common cybersecurity threats in IoT ecosystems including DDoS attacks, data breaches, and unauthorized access. We propose a multi-layered security framework incorporating encryption, authentication protocols, and anomaly detection using machine learning. Our evaluation shows that the proposed framework can detect 98.5% of known attacks while maintaining low false positive rates.',
                 'author' => ['Dr. Dang Quang Minh', 'Prof. Tran Quoc Huy'],
                 'event_id' => (string) $targetEvents->last()->_id,
-                'file_url' => 'https://example.com/papers/iot-cybersecurity.pdf',
+                'file_url' => '',
                 'view' => 198,
                 'download' => 76,
                 'category' => 'Cybersecurity',
@@ -104,7 +99,7 @@ class PaperSeeder extends Seeder
                 $createdCount++;
                 $this->command->info("Đã tạo: {$paperData['title']}");
             } catch (\Exception $e) {
-                $this->command->error("Lỗi khi tạo '{$paperData['title']}': " . $e->getMessage());
+                $this->command->error("Lỗi khi tạo '{$paperData['title']}': ".$e->getMessage());
             }
         }
     }

@@ -13,8 +13,8 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             UserSeeder::class,
             // LocationSeeder::class,
-            // EventSeeder::class,
-            // PaperSeeder::class,
+            EventSeeder::class,
+            PaperSeeder::class,
         ]);
     }
 }
