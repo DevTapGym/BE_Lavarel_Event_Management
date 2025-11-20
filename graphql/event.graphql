@@ -113,7 +113,7 @@ extend type Mutation {
 
     "Chuyển sự kiện sang trạng thái tiếp theo"
     advanceStatus(id: ID!): Event
-        @middleware(checks: ["jwt.auth", "check.permission", "active"])
+        @middleware(checks: ["jwt.auth", "active"])
         @checkPermission(permission: "add-event-status")
         @field(resolver: "App\\GraphQL\\Mutations\\EventMutation@advanceStatus")
 
