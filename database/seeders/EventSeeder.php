@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Event;
 use App\Models\Location;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class EventSeeder extends Seeder
 {
@@ -17,14 +16,15 @@ class EventSeeder extends Seeder
     {
         // Kiểm tra xem có location nào không
         $locations = Location::all();
-        
+
         if ($locations->isEmpty()) {
             $this->command->error('Không có location nào trong hệ thống!');
             $this->command->warn('Vui lòng chạy LocationSeeder trước: php artisan db:seed --class=LocationSeeder');
+
             return;
         }
 
-        $this->command->info('Tìm thấy ' . $locations->count() . ' locations. Bắt đầu tạo events...');
+        $this->command->info('Tìm thấy '.$locations->count().' locations. Bắt đầu tạo events...');
 
         $events = [
             // 1. Event UPCOMING - WAITING (Sắp diễn ra, chờ phê duyệt)
@@ -38,7 +38,7 @@ class EventSeeder extends Seeder
                 'topic' => 'Artificial Intelligence',
                 'capacity' => 200,
                 'waiting_capacity' => 50,
-                'image_url' => '/storage/events/ai-conference-2025.jpg',
+                'image_url' => '/storage/events/Event_69140292069c4834040e91c3_20251118_213631.webp',
                 'speakers' => [
                     [
                         'name' => 'TS. Nguyễn Văn An',
@@ -54,13 +54,14 @@ class EventSeeder extends Seeder
                     ],
                 ],
                 'status_history' => [
-                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()]
+                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'approval_history' => [
-                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()]
+                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'current_confirmed' => 0,
                 'current_waiting' => 0,
+                'created_by' => 'admin@gmail.com',
             ],
 
             // 2. Event UPCOMING - APPROVED (Sắp diễn ra, đã phê duyệt)
@@ -84,14 +85,14 @@ class EventSeeder extends Seeder
                     ],
                 ],
                 'status_history' => [
-                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(5)]
+                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'approval_history' => [
-                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(5)],
-                    ['name' => 'APPROVED', 'sequence' => 2, 'changed_at' => Carbon::now()->subDays(3)]
+                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'current_confirmed' => 45,
                 'current_waiting' => 10,
+                'created_by' => 'admin@gmail.com',
             ],
 
             // 3. Event OPEN - APPROVED (Đang mở đăng ký)
@@ -121,15 +122,14 @@ class EventSeeder extends Seeder
                     ],
                 ],
                 'status_history' => [
-                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(10)],
-                    ['name' => 'OPEN', 'sequence' => 2, 'changed_at' => Carbon::now()->subDays(2)]
+                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'approval_history' => [
-                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(10)],
-                    ['name' => 'APPROVED', 'sequence' => 2, 'changed_at' => Carbon::now()->subDays(8)]
+                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'current_confirmed' => 120,
                 'current_waiting' => 25,
+                'created_by' => 'admin@gmail.com',
             ],
 
             // 4. Event ONGOING - APPROVED (Đang diễn ra)
@@ -159,16 +159,14 @@ class EventSeeder extends Seeder
                     ],
                 ],
                 'status_history' => [
-                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(20)],
-                    ['name' => 'OPEN', 'sequence' => 2, 'changed_at' => Carbon::now()->subDays(15)],
-                    ['name' => 'ONGOING', 'sequence' => 3, 'changed_at' => Carbon::now()->subHours(2)]
+                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'approval_history' => [
-                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(20)],
-                    ['name' => 'APPROVED', 'sequence' => 2, 'changed_at' => Carbon::now()->subDays(18)]
+                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'current_confirmed' => 480,
                 'current_waiting' => 85,
+                'created_by' => 'admin@gmail.com',
             ],
 
             // 5. Event ENDED - APPROVED (Đã kết thúc)
@@ -198,17 +196,14 @@ class EventSeeder extends Seeder
                     ],
                 ],
                 'status_history' => [
-                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(30)],
-                    ['name' => 'OPEN', 'sequence' => 2, 'changed_at' => Carbon::now()->subDays(25)],
-                    ['name' => 'ONGOING', 'sequence' => 3, 'changed_at' => Carbon::now()->subDays(5)],
-                    ['name' => 'ENDED', 'sequence' => 4, 'changed_at' => Carbon::now()->subDays(5)->addHours(10)]
+                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'approval_history' => [
-                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(30)],
-                    ['name' => 'APPROVED', 'sequence' => 2, 'changed_at' => Carbon::now()->subDays(28)]
+                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'current_confirmed' => 285,
                 'current_waiting' => 0,
+                'created_by' => 'admin@gmail.com',
             ],
 
             // 6. Event CANCELLED - APPROVED (Đã hủy)
@@ -232,16 +227,14 @@ class EventSeeder extends Seeder
                     ],
                 ],
                 'status_history' => [
-                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(15)],
-                    ['name' => 'OPEN', 'sequence' => 2, 'changed_at' => Carbon::now()->subDays(10)],
-                    ['name' => 'CANCELLED', 'sequence' => 3, 'changed_at' => Carbon::now()->subDays(2)]
+                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'approval_history' => [
-                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(15)],
-                    ['name' => 'APPROVED', 'sequence' => 2, 'changed_at' => Carbon::now()->subDays(13)]
+                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'current_confirmed' => 35,
                 'current_waiting' => 0,
+                'created_by' => 'admin@gmail.com',
             ],
 
             // 7. Event UPCOMING - REJECTED (Bị từ chối)
@@ -265,14 +258,14 @@ class EventSeeder extends Seeder
                     ],
                 ],
                 'status_history' => [
-                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(7)]
+                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'approval_history' => [
-                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(7)],
-                    ['name' => 'REJECTED', 'sequence' => 2, 'changed_at' => Carbon::now()->subDays(5)]
+                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'current_confirmed' => 0,
                 'current_waiting' => 0,
+                'created_by' => 'admin@gmail.com',
             ],
 
             // 8. Event OPEN - APPROVED với nhiều speakers
@@ -308,15 +301,14 @@ class EventSeeder extends Seeder
                     ],
                 ],
                 'status_history' => [
-                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(8)],
-                    ['name' => 'OPEN', 'sequence' => 2, 'changed_at' => Carbon::now()->subDays(3)]
+                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'approval_history' => [
-                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(8)],
-                    ['name' => 'APPROVED', 'sequence' => 2, 'changed_at' => Carbon::now()->subDays(6)]
+                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'current_confirmed' => 180,
                 'current_waiting' => 45,
+                'created_by' => 'admin@gmail.com',
             ],
 
             // 9. Event ENDED - APPROVED (Full capacity)
@@ -340,17 +332,14 @@ class EventSeeder extends Seeder
                     ],
                 ],
                 'status_history' => [
-                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(14)],
-                    ['name' => 'OPEN', 'sequence' => 2, 'changed_at' => Carbon::now()->subDays(10)],
-                    ['name' => 'ONGOING', 'sequence' => 3, 'changed_at' => Carbon::now()->subDays(3)],
-                    ['name' => 'ENDED', 'sequence' => 4, 'changed_at' => Carbon::now()->subDays(3)->addHours(6)]
+                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'approval_history' => [
-                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(14)],
-                    ['name' => 'APPROVED', 'sequence' => 2, 'changed_at' => Carbon::now()->subDays(12)]
+                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'current_confirmed' => 60,
                 'current_waiting' => 15,
+                'created_by' => 'admin@gmail.com',
             ],
 
             // 10. Event UPCOMING - APPROVED (No speakers)
@@ -367,14 +356,14 @@ class EventSeeder extends Seeder
                 'image_url' => '/storage/events/career-talk.jpg',
                 'speakers' => [],
                 'status_history' => [
-                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(4)]
+                    ['name' => 'UPCOMING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'approval_history' => [
-                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()->subDays(4)],
-                    ['name' => 'APPROVED', 'sequence' => 2, 'changed_at' => Carbon::now()->subDays(2)]
+                    ['name' => 'WAITING', 'sequence' => 1, 'changed_at' => Carbon::now()],
                 ],
                 'current_confirmed' => 25,
                 'current_waiting' => 5,
+                'created_by' => 'admin@gmail.com',
             ],
         ];
 
@@ -385,7 +374,7 @@ class EventSeeder extends Seeder
                 $createdCount++;
                 $this->command->info("Đã tạo: {$eventData['title']}");
             } catch (Exception $e) {
-                $this->command->error("Lỗi khi tạo '{$eventData['title']}': " . $e->getMessage());
+                $this->command->error("Lỗi khi tạo '{$eventData['title']}': ".$e->getMessage());
             }
         }
     }

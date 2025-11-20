@@ -14,7 +14,7 @@ type Event {
     image_url: String
     current_status: String
     current_approval_status: String
-    created_by: String!
+    created_by: String
 
     # Lịch sử trạng thái (mảng object)
     status_history: [StatusHistory!]

@@ -84,6 +84,8 @@ class RoleSeeder extends Seeder
             'upload speaker avatar',
             'upload event image',
             'upload paper file',
+
+            'download paper',
         ];
 
         $organizer = Role::updateOrCreate(
